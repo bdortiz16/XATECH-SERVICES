@@ -8,11 +8,12 @@ Diseño inspirado en la estética de GitHub: tema oscuro, tarjetas tipo reposito
 
 - `index.html` — Página autocontenida (HTML + CSS + JS en un solo archivo, sin dependencias externas).
 - `logo.svg` — Logo oficial de XATECH: hexágono tipo chip con "X" de circuito y degradado azul-morado-verde.
+- `logos/` — Logos individuales de cada producto del portafolio (SVG, 256×256): commerce, bot, erp, analytics, cloud y secure.
 
 ## Secciones de la página
 
 - **Inicio (Hero)** — Logo, mensaje de tecnología inteligente y terminal decorativa.
-- **Portafolio de productos** — 6 productos presentados como tarjetas tipo repositorio (xatech-commerce, xatech-bot, xatech-erp, xatech-analytics, xatech-cloud, xatech-secure).
+- **Portafolio de productos** — 6 productos XATECH con logo propio, presentados como tarjetas tipo repositorio (XATECH Commerce, Bot, ERP, Analytics, Cloud y Secure).
 - **Servicios** — Desarrollo web y apps, IA y automatización, nube, ciberseguridad, soporte TI y consultoría.
 - **Tecnología inteligente** — Propuesta de valor con IA en el centro, más estadísticas.
 - **Contacto** — Formulario de contacto (frontend; pendiente conectar a un backend o servicio de correo).
