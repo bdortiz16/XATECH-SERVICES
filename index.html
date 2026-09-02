@@ -3,776 +3,912 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="XATECH Services — Tecnología inteligente para tu negocio: desarrollo web, IA, nube, ciberseguridad y portafolio de productos.">
-  <title>XATECH Services — Tecnología Inteligente</title>
+  <meta name="description" content="XATECH Services — Desarrollo de software, intermediación tecnológica y consultoría TI.">
+  <title>XATECH Services — Desarrollo de Software y Consultoría TI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-    /* ===== Paleta estilo GitHub (dark) ===== */
     :root {
-      --bg: #0d1117;
-      --bg-subtle: #010409;
-      --bg-card: #161b22;
-      --bg-inset: #0d1117;
-      --border: #30363d;
-      --border-muted: #21262d;
-      --text: #e6edf3;
-      --muted: #8b949e;
-      --link: #58a6ff;
-      --green: #238636;
-      --green-hover: #2ea043;
-      --green-text: #3fb950;
-      --accent: #58a6ff;
-      --purple: #bc8cff;
-      --orange: #d29922;
-      --red: #f85149;
-      --pink: #db61a2;
-      --radius: 6px;
-      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
-      --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      --bg: #0b0e14;
+      --bg-alt: #0d1017;
+      --panel: #10141c;
+      --border: #232a36;
+      --text: #e6e9ef;
+      --muted: #9aa4b5;
+      --green: #3ec96e;
+      --green-dark: #2ea15c;
+      --violet: #9d7bff;
+      --radius: 12px;
+      --radius-sm: 10px;
+      --sans: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+      --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
 
     body {
-      font-family: var(--font);
+      font-family: var(--sans);
       background: var(--bg);
       color: var(--text);
-      line-height: 1.5;
+      line-height: 1.6;
       font-size: 16px;
     }
 
-    a { color: var(--link); text-decoration: none; }
-    a:hover { text-decoration: underline; }
+    a { color: inherit; text-decoration: none; }
+    .container { width: min(1140px, 92%); margin: 0 auto; }
 
-    .container { width: min(1216px, 94%); margin: 0 auto; }
+    ::selection { background: rgba(157, 123, 255, 0.35); }
 
-    /* ===== Header estilo GitHub ===== */
+    /* ===== Etiqueta de sección (mono violeta numerada) ===== */
+    .sec-label {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--violet);
+      letter-spacing: 0.08em;
+      display: block;
+      margin-bottom: 0.9rem;
+    }
+    .sec-label::before { content: "// "; opacity: 0.6; }
+
+    .sec-title {
+      font-size: clamp(1.6rem, 3.2vw, 2.3rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 0.7rem;
+    }
+    .sec-desc { color: var(--muted); max-width: 620px; margin-bottom: 2.6rem; }
+
+    section { padding: 5.5rem 0; }
+    .alt { background: var(--bg-alt); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+
+    /* ===== Nav ===== */
     header {
-      background: var(--bg-subtle);
-      border-bottom: 1px solid var(--border);
       position: sticky;
       top: 0;
       z-index: 100;
+      background: rgba(11, 14, 20, 0.78);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
     }
-
-    .header-inner {
+    nav {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      padding: 0.75rem 0;
+      gap: 1.5rem;
+      padding: 0.85rem 0;
     }
-
     .brand {
       display: flex;
       align-items: center;
       gap: 0.6rem;
-      color: var(--text) !important;
-      font-weight: 700;
+      font-weight: 800;
       font-size: 1.05rem;
+      letter-spacing: 0.02em;
     }
-    .brand:hover { text-decoration: none; }
-    .brand svg { display: block; }
-
-    .searchbox {
-      flex: 0 1 320px;
+    .brand em { font-style: normal; color: var(--green); }
+    .nav-links {
       display: flex;
+      gap: 1.6rem;
+      list-style: none;
+      margin-left: auto;
       align-items: center;
-      gap: 0.5rem;
-      background: var(--bg-inset);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 0.3rem 0.75rem;
+    }
+    .nav-links a {
+      font-size: 0.92rem;
       color: var(--muted);
-      font-size: 0.85rem;
+      transition: color 0.15s;
     }
-    .searchbox kbd {
-      margin-left: auto;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      padding: 0 0.35rem;
-      font-family: var(--mono);
-      font-size: 0.75rem;
-    }
-
-    .main-nav {
-      display: flex;
-      align-items: center;
-      gap: 1.1rem;
-      margin-left: auto;
-    }
-    .main-nav a {
-      color: var(--text);
-      font-size: 0.9rem;
-      font-weight: 500;
-    }
-    .main-nav a:hover { color: var(--muted); text-decoration: none; }
-
+    .nav-links a:hover { color: var(--text); }
     .menu-toggle {
       display: none;
       margin-left: auto;
       background: none;
       border: 1px solid var(--border);
-      border-radius: var(--radius);
+      border-radius: var(--radius-sm);
       color: var(--text);
-      font-size: 1.2rem;
-      padding: 0.2rem 0.6rem;
+      font-size: 1.15rem;
+      padding: 0.25rem 0.65rem;
       cursor: pointer;
     }
 
     /* ===== Botones ===== */
     .btn {
       display: inline-block;
-      padding: 0.45rem 1rem;
-      border-radius: var(--radius);
-      font-size: 0.9rem;
-      font-weight: 600;
-      border: 1px solid var(--border);
-      background: #21262d;
-      color: var(--text);
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: 0.95rem;
+      padding: 0.7rem 1.5rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid transparent;
       cursor: pointer;
-      transition: background 0.15s, border-color 0.15s;
+      transition: background 0.15s, border-color 0.15s, transform 0.15s;
     }
-    .btn:hover { background: #30363d; text-decoration: none; }
-
-    .btn-primary {
+    .btn-green {
       background: var(--green);
-      border-color: rgba(240, 246, 252, 0.1);
-      color: #fff;
+      color: #07130b;
     }
-    .btn-primary:hover { background: var(--green-hover); }
+    .btn-green:hover { background: var(--green-dark); transform: translateY(-1px); }
+    .btn-outline {
+      border-color: var(--border);
+      color: var(--text);
+      background: transparent;
+    }
+    .btn-outline:hover { border-color: var(--violet); color: var(--violet); }
+    .btn-sm { padding: 0.45rem 1.05rem; font-size: 0.85rem; }
 
-    .btn-lg { padding: 0.75rem 1.5rem; font-size: 1rem; }
-
-    /* ===== Hero ===== */
+    /* ===== 01 · Hero ===== */
     .hero {
-      padding: 5.5rem 0 4.5rem;
-      text-align: center;
+      padding: 6rem 0 5.5rem;
       background:
-        radial-gradient(ellipse 55% 45% at 50% 0%, rgba(88, 166, 255, 0.15), transparent),
-        radial-gradient(ellipse 35% 35% at 85% 15%, rgba(188, 140, 255, 0.10), transparent);
-      border-bottom: 1px solid var(--border-muted);
+        radial-gradient(ellipse 50% 42% at 22% 0%, rgba(62, 201, 110, 0.08), transparent),
+        radial-gradient(ellipse 45% 40% at 85% 8%, rgba(157, 123, 255, 0.09), transparent);
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 3.5rem;
+      align-items: center;
     }
 
-    .hero-logo { margin-bottom: 1.5rem; }
+    .badge-avail {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--green);
+      border: 1px solid rgba(62, 201, 110, 0.35);
+      background: rgba(62, 201, 110, 0.08);
+      border-radius: 2em;
+      padding: 0.3rem 0.85rem;
+      margin-bottom: 1.4rem;
+    }
+    .badge-avail .pulse {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(62, 201, 110, 0.5); }
+      50% { box-shadow: 0 0 0 6px rgba(62, 201, 110, 0); }
+    }
 
     .hero h1 {
-      font-size: clamp(2.2rem, 5.5vw, 3.8rem);
+      font-size: clamp(2.3rem, 4.8vw, 3.5rem);
       font-weight: 800;
-      letter-spacing: -0.02em;
-      line-height: 1.1;
-      margin-bottom: 1rem;
+      letter-spacing: -0.03em;
+      line-height: 1.08;
+      margin-bottom: 1.2rem;
     }
+    .hero h1 .g { color: var(--green); }
+    .hero h1 .v { color: var(--violet); }
+    .hero p.lead { color: var(--muted); font-size: 1.12rem; max-width: 520px; margin-bottom: 2rem; }
+    .hero-actions { display: flex; gap: 0.9rem; flex-wrap: wrap; margin-bottom: 2.8rem; }
 
-    .hero h1 .grad {
-      background: linear-gradient(90deg, #58a6ff, #bc8cff, #3fb950);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-
-    .hero p.lead {
-      max-width: 680px;
-      margin: 0 auto 2rem;
-      color: var(--muted);
-      font-size: 1.2rem;
-    }
-
-    .hero-actions { display: flex; gap: 0.8rem; justify-content: center; flex-wrap: wrap; }
-
-    /* Barra de terminal decorativa */
-    .terminal {
-      max-width: 620px;
-      margin: 2.8rem auto 0;
-      background: var(--bg-subtle);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      text-align: left;
-      overflow: hidden;
-      font-family: var(--mono);
-      font-size: 0.85rem;
-    }
-    .terminal-bar {
-      background: var(--bg-card);
-      border-bottom: 1px solid var(--border);
-      padding: 0.5rem 0.9rem;
+    .metrics {
       display: flex;
-      gap: 0.4rem;
-    }
-    .terminal-bar span { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
-    .dot-r { background: #f85149; } .dot-y { background: #d29922; } .dot-g { background: #3fb950; }
-    .terminal pre { padding: 1rem 1.1rem; color: var(--muted); overflow-x: auto; }
-    .terminal .cmd { color: var(--text); }
-    .terminal .ok { color: var(--green-text); }
-    .terminal .p { color: var(--purple); }
-
-    /* ===== Secciones ===== */
-    section { padding: 4.5rem 0; }
-
-    .section-head { margin-bottom: 2.2rem; }
-    .section-head h2 {
-      font-size: 1.9rem;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-    }
-    .section-head p { color: var(--muted); margin-top: 0.4rem; max-width: 640px; }
-
-    .counter-pill {
-      font-size: 0.8rem;
-      font-weight: 600;
-      background: rgba(110, 118, 129, 0.4);
-      border-radius: 2em;
-      padding: 0.1rem 0.6rem;
-      color: var(--text);
-    }
-
-    /* ===== Portafolio: tarjetas tipo repositorio de GitHub ===== */
-    .repo-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 1rem;
-    }
-
-    .repo-card {
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.1rem 1.2rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.6rem;
-      transition: border-color 0.15s, transform 0.15s;
-    }
-    .repo-card:hover { border-color: var(--muted); transform: translateY(-2px); }
-
-    .repo-title {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      font-weight: 600;
-      font-size: 1rem;
-    }
-    .repo-title svg { flex: none; }
-    .repo-title a { color: var(--link); }
-
-    .prod-logo { width: 48px; height: 48px; flex: none; }
-    .prod-name { display: flex; flex-direction: column; gap: 0.1rem; }
-    .prod-name small { color: var(--muted); font-weight: 400; font-size: 0.75rem; }
-
-    .badge {
-      font-size: 0.7rem;
-      font-weight: 500;
-      color: var(--muted);
-      border: 1px solid var(--border);
-      border-radius: 2em;
-      padding: 0.05rem 0.55rem;
-      margin-left: auto;
-      white-space: nowrap;
-    }
-    .badge.ai { color: var(--purple); border-color: rgba(188, 140, 255, 0.4); }
-
-    .repo-desc { color: var(--muted); font-size: 0.88rem; flex: 1; }
-
-    .repo-meta {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      font-size: 0.78rem;
-      color: var(--muted);
+      gap: 2.5rem;
       flex-wrap: wrap;
     }
-    .repo-meta .lang { display: flex; align-items: center; gap: 0.35rem; }
-    .lang-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-    .repo-meta .stars { display: flex; align-items: center; gap: 0.25rem; }
+    .metric strong {
+      display: block;
+      font-size: 1.7rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .metric span {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
 
-    /* ===== Servicios (lista tipo GitHub) ===== */
-    .feature-list {
+    /* Terminal */
+    .terminal {
+      background: var(--panel);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       overflow: hidden;
-      background: var(--bg-card);
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
     }
-    .feature-row {
+    .term-bar {
       display: flex;
-      gap: 1rem;
-      padding: 1.1rem 1.3rem;
-      border-bottom: 1px solid var(--border-muted);
-      align-items: flex-start;
-    }
-    .feature-row:last-child { border-bottom: none; }
-    .feature-row:hover { background: rgba(177, 186, 196, 0.06); }
-    .feature-icon { font-size: 1.4rem; line-height: 1.2; }
-    .feature-row h3 { font-size: 1rem; margin-bottom: 0.15rem; }
-    .feature-row p { color: var(--muted); font-size: 0.88rem; }
-
-    /* ===== Tecnología inteligente ===== */
-    .smart {
-      background: var(--bg-subtle);
-      border-top: 1px solid var(--border-muted);
-      border-bottom: 1px solid var(--border-muted);
-    }
-    .smart-inner {
-      display: grid;
-      grid-template-columns: 1.1fr 1fr;
-      gap: 3rem;
       align-items: center;
+      gap: 0.45rem;
+      padding: 0.65rem 1rem;
+      background: var(--bg-alt);
+      border-bottom: 1px solid var(--border);
     }
-    .smart h2 { font-size: 1.9rem; margin-bottom: 1rem; }
-    .smart p { color: var(--muted); margin-bottom: 0.9rem; }
-    .smart ul { list-style: none; margin-top: 1.2rem; display: grid; gap: 0.7rem; }
-    .smart li { display: flex; gap: 0.6rem; align-items: flex-start; font-size: 0.95rem; }
-    .smart li .check { color: var(--green-text); font-weight: 700; }
+    .term-bar i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+    .term-bar .r { background: #e5534b; } .term-bar .y { background: #d4a72c; } .term-bar .g { background: var(--green); }
+    .term-bar span {
+      margin-left: 0.6rem;
+      color: var(--muted);
+      font-size: 0.72rem;
+    }
+    .term-body { padding: 1.1rem 1.2rem 1.4rem; min-height: 200px; }
+    .term-body .line { display: block; white-space: pre-wrap; color: var(--muted); }
+    .term-body .p { color: var(--green); }
+    .term-body .c { color: var(--text); }
+    .term-body .k { color: var(--violet); }
+    .cursor {
+      display: inline-block;
+      width: 8px; height: 15px;
+      background: var(--green);
+      vertical-align: text-bottom;
+      animation: blink 1s steps(1) infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
 
-    .stats {
+    /* ===== 02 · Servicios ===== */
+    .svc-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.1rem;
+    }
+    .svc-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+    .svc-card:hover { border-color: var(--green); transform: translateY(-3px); }
+    .svc-tag {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--green);
+      background: rgba(62, 201, 110, 0.08);
+      border: 1px solid rgba(62, 201, 110, 0.25);
+      border-radius: 5px;
+      padding: 0.12rem 0.5rem;
+      display: inline-block;
+      margin-bottom: 0.9rem;
+    }
+    .svc-card h3 { font-size: 1.08rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .svc-card p { color: var(--muted); font-size: 0.9rem; }
+
+    /* ===== 03 · Portafolio ===== */
+    .pf-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.1rem;
+    }
+    .pf-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color 0.15s, transform 0.15s;
+    }
+    .pf-card:hover { border-color: var(--violet); transform: translateY(-3px); }
+    .pf-thumb {
+      height: 150px;
+      border-bottom: 1px solid var(--border);
+      background:
+        repeating-linear-gradient(-45deg,
+          rgba(157, 123, 255, 0.07) 0 10px,
+          transparent 10px 20px),
+        var(--bg-alt);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .pf-thumb svg { opacity: 0.9; }
+    .pf-body { padding: 1.3rem 1.4rem 1.5rem; }
+    .pf-body h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.35rem; }
+    .pf-body p { color: var(--muted); font-size: 0.88rem; margin-bottom: 1rem; }
+    .chips { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .chip {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--violet);
+      border: 1px solid rgba(157, 123, 255, 0.3);
+      background: rgba(157, 123, 255, 0.08);
+      border-radius: 5px;
+      padding: 0.1rem 0.5rem;
+    }
+
+    /* ===== 04 · Consultoría ===== */
+    .split {
       display: grid;
       grid-template-columns: 1fr 1fr;
+      gap: 3.5rem;
+      align-items: start;
+    }
+    .checklist { list-style: none; display: grid; gap: 0.85rem; margin-top: 1.6rem; }
+    .checklist li { display: flex; gap: 0.7rem; align-items: flex-start; font-size: 0.97rem; }
+    .checklist .tick {
+      flex: none;
+      width: 20px; height: 20px;
+      border-radius: 6px;
+      background: rgba(62, 201, 110, 0.12);
+      border: 1px solid rgba(62, 201, 110, 0.4);
+      color: var(--green);
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 0.15rem;
+    }
+    .steps { display: grid; gap: 1rem; }
+    .step {
+      display: flex;
+      gap: 1.1rem;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.4rem;
+    }
+    .step-num {
+      font-family: var(--mono);
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--violet);
+      flex: none;
+      width: 38px; height: 38px;
+      border: 1px solid rgba(157, 123, 255, 0.35);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(157, 123, 255, 0.07);
+    }
+    .step h4 { font-size: 1rem; font-weight: 700; margin-bottom: 0.2rem; }
+    .step p { color: var(--muted); font-size: 0.88rem; }
+
+    /* ===== 05 · Proceso ===== */
+    .proc-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.1rem;
+    }
+    .proc {
+      border-top: 2px solid var(--border);
+      padding-top: 1.2rem;
+      transition: border-color 0.2s;
+    }
+    .proc:hover { border-top-color: var(--green); }
+    .proc .n {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--green);
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    .proc h4 { font-size: 1rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .proc p { color: var(--muted); font-size: 0.87rem; }
+
+    /* ===== 06 · Testimonios ===== */
+    .ts-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.1rem;
+    }
+    .ts-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.6rem;
+      display: flex;
+      flex-direction: column;
       gap: 1rem;
     }
-    .stat {
-      background: var(--bg-card);
+    .ts-card .quote { color: var(--violet); font-size: 1.6rem; line-height: 1; font-family: var(--mono); }
+    .ts-card p { color: var(--text); font-size: 0.94rem; flex: 1; }
+    .ts-who { display: flex; align-items: center; gap: 0.75rem; }
+    .ts-avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--green), var(--violet));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.85rem;
+      color: #0b0e14;
+      flex: none;
+    }
+    .ts-who strong { display: block; font-size: 0.9rem; }
+    .ts-who span { color: var(--muted); font-size: 0.78rem; font-family: var(--mono); }
+
+    /* ===== 07 · Stack ===== */
+    .stack-chips { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+    .stack-chip {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--text);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.4rem 0.9rem;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .stack-chip:hover { border-color: var(--green); color: var(--green); }
+
+    /* ===== 08 · Planes ===== */
+    .plan-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.1rem;
+      align-items: stretch;
+    }
+    .plan {
+      background: var(--panel);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 1.3rem 1rem;
-      text-align: center;
+      padding: 1.8rem 1.6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
     }
-    .stat strong { display: block; font-size: 1.9rem; color: var(--green-text); }
-    .stat span { color: var(--muted); font-size: 0.83rem; }
+    .plan.featured {
+      border-color: var(--green);
+      box-shadow: 0 0 0 1px var(--green), 0 18px 50px rgba(62, 201, 110, 0.1);
+      position: relative;
+    }
+    .plan-flag {
+      position: absolute;
+      top: -0.8rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      background: var(--green);
+      color: #07130b;
+      font-weight: 600;
+      border-radius: 2em;
+      padding: 0.18rem 0.8rem;
+      white-space: nowrap;
+    }
+    .plan .kind { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); letter-spacing: 0.06em; }
+    .plan h3 { font-size: 1.25rem; font-weight: 800; }
+    .plan p.desc { color: var(--muted); font-size: 0.88rem; }
+    .plan ul { list-style: none; display: grid; gap: 0.5rem; flex: 1; }
+    .plan li { font-size: 0.88rem; color: var(--muted); display: flex; gap: 0.5rem; }
+    .plan li::before { content: "→"; color: var(--green); font-family: var(--mono); }
+    .plan .btn { text-align: center; }
 
     /* ===== Contacto ===== */
-    .contact-box {
-      max-width: 580px;
-      margin: 0 auto;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1.8rem;
-    }
-    .contact-box label {
-      display: block;
-      font-weight: 600;
-      font-size: 0.9rem;
-      margin: 1rem 0 0.35rem;
-    }
-    .contact-box label:first-child { margin-top: 0; }
-    .contact-box input,
-    .contact-box textarea {
-      width: 100%;
-      padding: 0.55rem 0.75rem;
-      background: var(--bg-inset);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      color: var(--text);
-      font-family: inherit;
-      font-size: 0.95rem;
-    }
-    .contact-box input:focus,
-    .contact-box textarea:focus {
-      outline: none;
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.3);
-    }
-    .contact-box textarea { min-height: 120px; resize: vertical; }
-    .contact-box button { width: 100%; margin-top: 1.3rem; }
-    .form-status {
+    .contact {
       text-align: center;
-      color: var(--green-text);
-      font-weight: 600;
-      font-size: 0.9rem;
-      min-height: 1.4rem;
-      margin-top: 0.7rem;
+      padding: 6rem 0;
     }
+    .contact .sec-label { text-align: center; }
+    .contact h2 {
+      font-size: clamp(1.8rem, 3.6vw, 2.6rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.8rem;
+    }
+    .contact p { color: var(--muted); max-width: 520px; margin: 0 auto 2rem; }
+    .contact-mail {
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      color: var(--muted);
+      display: block;
+      margin-top: 1.4rem;
+    }
+    .contact-mail a { color: var(--violet); }
+    .contact-mail a:hover { text-decoration: underline; }
 
     /* ===== Footer ===== */
     footer {
       border-top: 1px solid var(--border);
-      padding: 2.5rem 0;
-      color: var(--muted);
-      font-size: 0.85rem;
+      padding: 2.2rem 0;
     }
     .footer-inner {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 1rem;
       flex-wrap: wrap;
-      justify-content: space-between;
+      color: var(--muted);
+      font-size: 0.85rem;
     }
-    .footer-brand { display: flex; align-items: center; gap: 0.5rem; }
-    .footer-links { display: flex; gap: 1.2rem; list-style: none; }
+    .footer-inner .mono { font-family: var(--mono); font-size: 0.75rem; }
+    .footer-links { display: flex; gap: 1.3rem; list-style: none; }
     .footer-links a { color: var(--muted); }
-    .footer-links a:hover { color: var(--link); }
+    .footer-links a:hover { color: var(--text); }
 
     /* ===== Responsive ===== */
-    @media (max-width: 820px) {
-      .searchbox { display: none; }
+    @media (max-width: 960px) {
+      .hero-grid { grid-template-columns: 1fr; }
+      .svc-grid, .pf-grid, .ts-grid, .plan-grid { grid-template-columns: 1fr 1fr; }
+      .proc-grid { grid-template-columns: 1fr 1fr; }
+      .split { grid-template-columns: 1fr; gap: 2.2rem; }
+    }
+    @media (max-width: 640px) {
       .menu-toggle { display: block; }
-      .main-nav {
+      .nav-links {
         display: none;
         position: absolute;
         top: 100%;
         left: 0; right: 0;
         flex-direction: column;
         align-items: flex-start;
-        background: var(--bg-subtle);
+        background: rgba(11, 14, 20, 0.97);
         border-bottom: 1px solid var(--border);
-        padding: 1rem 4%;
-        gap: 0.9rem;
+        padding: 1.1rem 4%;
+        gap: 1rem;
       }
-      .main-nav.open { display: flex; }
-      .smart-inner { grid-template-columns: 1fr; }
+      .nav-links.open { display: flex; }
+      .svc-grid, .pf-grid, .ts-grid, .plan-grid, .proc-grid { grid-template-columns: 1fr; }
+      .metrics { gap: 1.6rem; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Logo XATECH reutilizable: hexágono con circuito y chispa "x" -->
+  <!-- Logo XATECH: hexágono chip con X de circuito -->
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <defs>
       <linearGradient id="xa-grad" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#58a6ff"/>
-        <stop offset="55%" stop-color="#bc8cff"/>
-        <stop offset="100%" stop-color="#3fb950"/>
+        <stop offset="0%" stop-color="#3ec96e"/>
+        <stop offset="100%" stop-color="#9d7bff"/>
       </linearGradient>
       <g id="xa-logo">
-        <!-- Hexágono (chip) -->
         <path d="M32 3 58 17.5v29L32 61 6 46.5v-29Z" fill="none" stroke="url(#xa-grad)" stroke-width="4" stroke-linejoin="round"/>
-        <!-- X central estilo circuito -->
         <path d="M21 21 32 32 21 43 M43 21 32 32l11 11" fill="none" stroke="url(#xa-grad)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <!-- Nodos de circuito -->
-        <circle cx="21" cy="21" r="3.2" fill="#58a6ff"/>
-        <circle cx="43" cy="21" r="3.2" fill="#bc8cff"/>
-        <circle cx="21" cy="43" r="3.2" fill="#bc8cff"/>
-        <circle cx="43" cy="43" r="3.2" fill="#3fb950"/>
-      </g>
-
-      <!-- Logos de productos del portafolio XATECH -->
-      <linearGradient id="g-com" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#f1e05a"/><stop offset="100%" stop-color="#d29922"/>
-      </linearGradient>
-      <g id="logo-commerce">
-        <rect x="4" y="4" width="56" height="56" rx="14" fill="#1c2333" stroke="#30363d" stroke-width="1.5"/>
-        <path d="M22 27h20l-2.4 21a3 3 0 0 1-3 2.7h-9.2a3 3 0 0 1-3-2.7Z" fill="none" stroke="url(#g-com)" stroke-width="3.5" stroke-linejoin="round"/>
-        <path d="M26 27v-4a6 6 0 0 1 12 0v4" fill="none" stroke="url(#g-com)" stroke-width="3.5" stroke-linecap="round"/>
-        <path d="M46 12l1.7 3.6 3.6 1.7-3.6 1.7L46 22.6l-1.7-3.6-3.6-1.7 3.6-1.7Z" fill="#f1e05a"/>
-      </g>
-
-      <linearGradient id="g-bot" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#bc8cff"/><stop offset="100%" stop-color="#8957e5"/>
-      </linearGradient>
-      <g id="logo-bot">
-        <rect x="4" y="4" width="56" height="56" rx="14" fill="#1c2333" stroke="#30363d" stroke-width="1.5"/>
-        <rect x="17" y="24" width="30" height="23" rx="7" fill="none" stroke="url(#g-bot)" stroke-width="3.5"/>
-        <path d="M32 24v-5" stroke="url(#g-bot)" stroke-width="3.5" stroke-linecap="round"/>
-        <circle cx="32" cy="15" r="3" fill="#bc8cff"/>
-        <circle cx="26" cy="34" r="3" fill="#bc8cff"/>
-        <circle cx="38" cy="34" r="3" fill="#bc8cff"/>
-        <path d="M27 41h10" stroke="url(#g-bot)" stroke-width="3" stroke-linecap="round"/>
-      </g>
-
-      <linearGradient id="g-erp" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#79c0ff"/><stop offset="100%" stop-color="#316dca"/>
-      </linearGradient>
-      <g id="logo-erp">
-        <rect x="4" y="4" width="56" height="56" rx="14" fill="#1c2333" stroke="#30363d" stroke-width="1.5"/>
-        <path d="M32 13l17 9-17 9-17-9Z" fill="none" stroke="url(#g-erp)" stroke-width="3.5" stroke-linejoin="round"/>
-        <path d="M15 31l17 9 17-9" fill="none" stroke="url(#g-erp)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M15 40l17 9 17-9" fill="none" stroke="url(#g-erp)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </g>
-
-      <linearGradient id="g-ana" x1="0" y1="1" x2="1" y2="0">
-        <stop offset="0%" stop-color="#2ea043"/><stop offset="100%" stop-color="#3fb950"/>
-      </linearGradient>
-      <g id="logo-analytics">
-        <rect x="4" y="4" width="56" height="56" rx="14" fill="#1c2333" stroke="#30363d" stroke-width="1.5"/>
-        <rect x="17" y="37" width="7" height="12" rx="2" fill="url(#g-ana)"/>
-        <rect x="28.5" y="29" width="7" height="20" rx="2" fill="url(#g-ana)"/>
-        <rect x="40" y="21" width="7" height="28" rx="2" fill="url(#g-ana)"/>
-        <path d="M18 28l12-8 8 3 8-9" fill="none" stroke="#3fb950" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="46" cy="14" r="3" fill="#3fb950"/>
-      </g>
-
-      <linearGradient id="g-clo" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#79c0ff"/><stop offset="100%" stop-color="#1f6feb"/>
-      </linearGradient>
-      <g id="logo-cloud">
-        <rect x="4" y="4" width="56" height="56" rx="14" fill="#1c2333" stroke="#30363d" stroke-width="1.5"/>
-        <path d="M23 46a8.5 8.5 0 1 1 1.8-16.8A11.5 11.5 0 0 1 47 32.5 7.2 7.2 0 0 1 45.5 46Z" fill="none" stroke="url(#g-clo)" stroke-width="3.5" stroke-linejoin="round"/>
-        <path d="M32 42v-9m0 0-4 4m4-4 4 4" stroke="url(#g-clo)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-      </g>
-
-      <linearGradient id="g-sec" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#f85149"/><stop offset="100%" stop-color="#da3633"/>
-      </linearGradient>
-      <g id="logo-secure">
-        <rect x="4" y="4" width="56" height="56" rx="14" fill="#1c2333" stroke="#30363d" stroke-width="1.5"/>
-        <path d="M32 12l15 5.5V30c0 9.5-6.5 16.5-15 20.5C23.5 46.5 17 39.5 17 30V17.5Z" fill="none" stroke="url(#g-sec)" stroke-width="3.5" stroke-linejoin="round"/>
-        <path d="M25 31.5l5.5 5.5L40 26" fill="none" stroke="#3fb950" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="21" cy="21" r="3.2" fill="#3ec96e"/>
+        <circle cx="43" cy="21" r="3.2" fill="#9d7bff"/>
+        <circle cx="21" cy="43" r="3.2" fill="#9d7bff"/>
+        <circle cx="43" cy="43" r="3.2" fill="#3ec96e"/>
       </g>
     </defs>
   </svg>
 
   <header>
-    <div class="container header-inner">
-      <a href="#" class="brand" aria-label="XATECH Services">
-        <svg width="32" height="32" viewBox="0 0 64 64"><use href="#xa-logo"/></svg>
-        XATECH
-      </a>
-      <div class="searchbox">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M10.68 11.74a6 6 0 0 1-7.922-8.982 6 6 0 0 1 8.982 7.922l3.04 3.04a.749.749 0 0 1-.326 1.275.749.749 0 0 1-.734-.215ZM11.5 7a4.499 4.499 0 1 0-8.997 0A4.499 4.499 0 0 0 11.5 7Z"/></svg>
-        Buscar en XATECH...
-        <kbd>/</kbd>
-      </div>
-      <button class="menu-toggle" aria-label="Abrir menú">☰</button>
-      <nav class="main-nav">
-        <a href="#portafolio">Portafolio</a>
-        <a href="#servicios">Servicios</a>
-        <a href="#inteligente">Tecnología Inteligente</a>
-        <a href="#contacto">Contacto</a>
-        <a href="#contacto" class="btn btn-primary">Cotizar</a>
+    <div class="container">
+      <nav>
+        <a href="#" class="brand">
+          <svg width="28" height="28" viewBox="0 0 64 64"><use href="#xa-logo"/></svg>
+          XA<em>TECH</em>
+        </a>
+        <button class="menu-toggle" aria-label="Abrir menú">☰</button>
+        <ul class="nav-links">
+          <li><a href="#servicios">Servicios</a></li>
+          <li><a href="#portafolio">Portafolio</a></li>
+          <li><a href="#consultoria">Consultoría</a></li>
+          <li><a href="#proceso">Proceso</a></li>
+          <li><a href="#planes">Planes</a></li>
+          <li><a href="#contacto" class="btn btn-green btn-sm">Contactar</a></li>
+        </ul>
       </nav>
     </div>
   </header>
 
+  <!-- 01 · Hero -->
   <section class="hero">
-    <div class="container">
-      <div class="hero-logo">
-        <svg width="88" height="88" viewBox="0 0 64 64"><use href="#xa-logo"/></svg>
-      </div>
-      <h1>Construimos el futuro con<br><span class="grad">tecnología inteligente</span></h1>
-      <p class="lead">XATECH Services integra inteligencia artificial, automatización y desarrollo de software de clase mundial para llevar tu negocio al siguiente nivel.</p>
-      <div class="hero-actions">
-        <a href="#portafolio" class="btn btn-primary btn-lg">Explorar portafolio</a>
-        <a href="#contacto" class="btn btn-lg">Hablar con nosotros</a>
+    <div class="container hero-grid">
+      <div>
+        <span class="sec-label">01 · inicio</span>
+        <span class="badge-avail"><span class="pulse"></span>Disponibles para nuevos proyectos</span>
+        <h1>Software a la medida, <span class="g">bien construido</span> y <span class="v">bien asesorado</span>.</h1>
+        <p class="lead">XATECH Services desarrolla software, conecta empresas con la tecnología correcta y acompaña tu operación TI de principio a fin.</p>
+        <div class="hero-actions">
+          <a href="#contacto" class="btn btn-green">Iniciar un proyecto</a>
+          <a href="#portafolio" class="btn btn-outline">Ver portafolio</a>
+        </div>
+        <div class="metrics">
+          <div class="metric"><strong>+50</strong><span>proyectos</span></div>
+          <div class="metric"><strong>+30</strong><span>clientes</span></div>
+          <div class="metric"><strong>24/7</strong><span>soporte</span></div>
+        </div>
       </div>
 
       <div class="terminal" aria-hidden="true">
-        <div class="terminal-bar"><span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span></div>
-        <pre><span class="cmd">$ xatech deploy --smart</span>
-<span class="p">➜</span> Analizando tu negocio con IA...
-<span class="p">➜</span> Optimizando procesos y automatizando tareas...
-<span class="ok">✔ Tecnología inteligente desplegada. Tu empresa está lista.</span></pre>
+        <div class="term-bar">
+          <i class="r"></i><i class="y"></i><i class="g"></i>
+          <span>xatech@services: ~/proyectos</span>
+        </div>
+        <div class="term-body" id="termBody"></div>
       </div>
     </div>
   </section>
 
-  <section id="portafolio">
-    <div class="container">
-      <div class="section-head">
-        <h2>
-          <svg width="22" height="22" viewBox="0 0 16 16" fill="#8b949e"><path d="M2 2.5A2.5 2.5 0 0 1 4.5 0h8.75a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1 0-1.5h1.75v-2h-8a1 1 0 0 0-.714 1.7.75.75 0 1 1-1.072 1.05A2.495 2.495 0 0 1 2 11.5Zm10.5-1h-8a1 1 0 0 0-1 1v6.708A2.486 2.486 0 0 1 4.5 9h8ZM5 12.25a.25.25 0 0 1 .25-.25h3.5a.25.25 0 0 1 .25.25v3.25a.25.25 0 0 1-.4.2l-1.45-1.087a.249.249 0 0 0-.3 0L5.4 15.7a.25.25 0 0 1-.4-.2Z"/></svg>
-          Portafolio de productos
-          <span class="counter-pill">6</span>
-        </h2>
-        <p>Nuestros productos estrella, construidos con tecnología inteligente y listos para implementarse en tu empresa.</p>
-      </div>
-
-      <div class="repo-grid">
-        <div class="repo-card">
-          <div class="repo-title">
-            <svg class="prod-logo" viewBox="0 0 64 64"><use href="#logo-commerce"/></svg>
-            <div class="prod-name">
-              <a href="#contacto">XATECH Commerce</a>
-              <small>E-commerce inteligente</small>
-            </div>
-            <span class="badge ai">✦ IA integrada</span>
-          </div>
-          <p class="repo-desc">Tienda en línea inteligente con recomendaciones de productos por IA, pagos integrados y panel de administración en tiempo real.</p>
-          <div class="repo-meta">
-            <span class="lang"><span class="lang-dot" style="background:#f1e05a"></span>E-commerce</span>
-            <span>Web · Móvil</span>
-          </div>
-        </div>
-
-        <div class="repo-card">
-          <div class="repo-title">
-            <svg class="prod-logo" viewBox="0 0 64 64"><use href="#logo-bot"/></svg>
-            <div class="prod-name">
-              <a href="#contacto">XATECH Bot</a>
-              <small>Asistente virtual con IA</small>
-            </div>
-            <span class="badge ai">✦ IA integrada</span>
-          </div>
-          <p class="repo-desc">Asistente virtual con inteligencia artificial para atención al cliente 24/7 en WhatsApp, web y redes sociales.</p>
-          <div class="repo-meta">
-            <span class="lang"><span class="lang-dot" style="background:#bc8cff"></span>Chatbot IA</span>
-            <span>WhatsApp · Web</span>
-          </div>
-        </div>
-
-        <div class="repo-card">
-          <div class="repo-title">
-            <svg class="prod-logo" viewBox="0 0 64 64"><use href="#logo-erp"/></svg>
-            <div class="prod-name">
-              <a href="#contacto">XATECH ERP</a>
-              <small>Gestión empresarial</small>
-            </div>
-          </div>
-          <p class="repo-desc">Sistema de gestión empresarial: inventario, facturación, clientes y reportes inteligentes con predicción de ventas.</p>
-          <div class="repo-meta">
-            <span class="lang"><span class="lang-dot" style="background:#79c0ff"></span>ERP / CRM</span>
-            <span>Nube</span>
-          </div>
-        </div>
-
-        <div class="repo-card">
-          <div class="repo-title">
-            <svg class="prod-logo" viewBox="0 0 64 64"><use href="#logo-analytics"/></svg>
-            <div class="prod-name">
-              <a href="#contacto">XATECH Analytics</a>
-              <small>Datos en tiempo real</small>
-            </div>
-            <span class="badge ai">✦ IA integrada</span>
-          </div>
-          <p class="repo-desc">Tableros de análisis de datos con inteligencia artificial: métricas de tu negocio en tiempo real y alertas automáticas.</p>
-          <div class="repo-meta">
-            <span class="lang"><span class="lang-dot" style="background:#3fb950"></span>Analítica</span>
-            <span>Dashboard</span>
-          </div>
-        </div>
-
-        <div class="repo-card">
-          <div class="repo-title">
-            <svg class="prod-logo" viewBox="0 0 64 64"><use href="#logo-cloud"/></svg>
-            <div class="prod-name">
-              <a href="#contacto">XATECH Cloud</a>
-              <small>Nube administrada</small>
-            </div>
-          </div>
-          <p class="repo-desc">Infraestructura en la nube administrada: hosting, respaldos automáticos, monitoreo y escalamiento inteligente.</p>
-          <div class="repo-meta">
-            <span class="lang"><span class="lang-dot" style="background:#79c0ff"></span>Cloud</span>
-            <span>Disponibilidad 24/7</span>
-          </div>
-        </div>
-
-        <div class="repo-card">
-          <div class="repo-title">
-            <svg class="prod-logo" viewBox="0 0 64 64"><use href="#logo-secure"/></svg>
-            <div class="prod-name">
-              <a href="#contacto">XATECH Secure</a>
-              <small>Ciberseguridad</small>
-            </div>
-          </div>
-          <p class="repo-desc">Suite de ciberseguridad: detección inteligente de amenazas, auditorías, respaldo cifrado y protección de datos.</p>
-          <div class="repo-meta">
-            <span class="lang"><span class="lang-dot" style="background:#f85149"></span>Seguridad</span>
-            <span>Empresarial</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
+  <!-- 02 · Servicios -->
   <section id="servicios">
     <div class="container">
-      <div class="section-head">
-        <h2>
-          <svg width="22" height="22" viewBox="0 0 16 16" fill="#8b949e"><path d="M8.048.808a.75.75 0 0 1 .904 0l6.75 5.062a.75.75 0 0 1 .05 1.156l-6.75 6.187a.75.75 0 0 1-1.004 0L1.248 7.026a.75.75 0 0 1 .05-1.156Zm.452 1.54L3.204 6.32 8.5 11.174 13.796 6.32Z"/></svg>
-          Servicios
-        </h2>
-        <p>Acompañamos cada etapa de tu transformación digital con soluciones a la medida.</p>
-      </div>
-
-      <div class="feature-list">
-        <div class="feature-row">
-          <span class="feature-icon">💻</span>
-          <div>
-            <h3>Desarrollo web y aplicaciones</h3>
-            <p>Sitios, apps móviles y sistemas a la medida con tecnologías modernas, escalables y seguras.</p>
-          </div>
+      <span class="sec-label">02 · servicios</span>
+      <h2 class="sec-title">Lo que hacemos</h2>
+      <p class="sec-desc">Cubrimos el ciclo completo: desde la idea y la arquitectura hasta el despliegue, la operación y el soporte.</p>
+      <div class="svc-grid">
+        <div class="svc-card">
+          <span class="svc-tag">dev/software</span>
+          <h3>Desarrollo a la medida</h3>
+          <p>Aplicaciones web, móviles y sistemas internos construidos según las necesidades reales de tu operación.</p>
         </div>
-        <div class="feature-row">
-          <span class="feature-icon">🤖</span>
-          <div>
-            <h3>Inteligencia artificial y automatización</h3>
-            <p>Chatbots, análisis predictivo y automatización de procesos con tecnología inteligente de última generación.</p>
-          </div>
+        <div class="svc-card">
+          <span class="svc-tag">dev/web</span>
+          <h3>Sitios y plataformas web</h3>
+          <p>Landing pages, e-commerce y portales corporativos rápidos, seguros y fáciles de administrar.</p>
         </div>
-        <div class="feature-row">
-          <span class="feature-icon">☁️</span>
-          <div>
-            <h3>Servicios en la nube</h3>
-            <p>Migración, hosting y administración de infraestructura con alta disponibilidad y escalamiento automático.</p>
-          </div>
+        <div class="svc-card">
+          <span class="svc-tag">ops/cloud</span>
+          <h3>Nube e infraestructura</h3>
+          <p>Migración, hosting administrado, respaldos y monitoreo con alta disponibilidad.</p>
         </div>
-        <div class="feature-row">
-          <span class="feature-icon">🔒</span>
-          <div>
-            <h3>Ciberseguridad</h3>
-            <p>Protección de datos, auditorías de seguridad y monitoreo inteligente de amenazas.</p>
-          </div>
+        <div class="svc-card">
+          <span class="svc-tag">biz/broker</span>
+          <h3>Intermediación tecnológica</h3>
+          <p>Te conectamos con los proveedores, licencias y equipos correctos, negociando en tu nombre.</p>
         </div>
-        <div class="feature-row">
-          <span class="feature-icon">🛠️</span>
-          <div>
-            <h3>Soporte TI</h3>
-            <p>Mantenimiento preventivo y correctivo de equipos, redes y servidores, con soporte 24/7.</p>
-          </div>
+        <div class="svc-card">
+          <span class="svc-tag">it/consulting</span>
+          <h3>Consultoría TI</h3>
+          <p>Diagnóstico, hoja de ruta y acompañamiento para decisiones tecnológicas con retorno claro.</p>
         </div>
-        <div class="feature-row">
-          <span class="feature-icon">📊</span>
-          <div>
-            <h3>Consultoría tecnológica</h3>
-            <p>Te asesoramos para elegir e implementar las herramientas que tu negocio realmente necesita.</p>
-          </div>
+        <div class="svc-card">
+          <span class="svc-tag">it/support</span>
+          <h3>Soporte y mantenimiento</h3>
+          <p>Mesas de ayuda, mantenimiento preventivo y correctivo, y atención de incidentes.</p>
         </div>
       </div>
     </div>
   </section>
 
-  <section id="inteligente" class="smart">
-    <div class="container smart-inner">
-      <div>
-        <h2>⚡ Tecnología inteligente en el centro de todo</h2>
-        <p>En XATECH creemos que la tecnología inteligente no es el futuro: es el presente. Por eso integramos inteligencia artificial y automatización en cada solución que construimos.</p>
-        <p>Tu empresa trabaja mejor cuando la tecnología piensa contigo.</p>
-        <ul>
-          <li><span class="check">✔</span> Procesos que se optimizan solos con aprendizaje automático.</li>
-          <li><span class="check">✔</span> Atención al cliente 24/7 con asistentes virtuales inteligentes.</li>
-          <li><span class="check">✔</span> Decisiones basadas en datos con analítica predictiva.</li>
-          <li><span class="check">✔</span> Seguridad proactiva que detecta amenazas antes de que ocurran.</li>
-        </ul>
-      </div>
-      <div class="stats">
-        <div class="stat"><strong>+50</strong><span>Proyectos entregados</span></div>
-        <div class="stat"><strong>+30</strong><span>Clientes satisfechos</span></div>
-        <div class="stat"><strong>6</strong><span>Productos en portafolio</span></div>
-        <div class="stat"><strong>24/7</strong><span>Soporte inteligente</span></div>
-      </div>
-    </div>
-  </section>
-
-  <section id="contacto">
+  <!-- 03 · Portafolio -->
+  <section id="portafolio" class="alt">
     <div class="container">
-      <div class="section-head" style="text-align:center">
-        <h2 style="justify-content:center">📬 Contáctanos</h2>
-        <p style="margin-left:auto;margin-right:auto">Cuéntanos tu proyecto y te responderemos lo antes posible.</p>
+      <span class="sec-label">03 · portafolio</span>
+      <h2 class="sec-title">Proyectos y productos</h2>
+      <p class="sec-desc">Una muestra de lo que construimos con nuestro sello: código limpio, entregas puntuales y soluciones que se usan a diario.</p>
+      <div class="pf-grid">
+        <div class="pf-card">
+          <div class="pf-thumb">
+            <svg width="54" height="54" viewBox="0 0 64 64"><use href="#xa-logo"/></svg>
+          </div>
+          <div class="pf-body">
+            <h3>XATECH Commerce</h3>
+            <p>Plataforma de tienda en línea con pagos integrados y panel de administración en tiempo real.</p>
+            <div class="chips">
+              <span class="chip">react</span>
+              <span class="chip">node.js</span>
+              <span class="chip">postgres</span>
+            </div>
+          </div>
+        </div>
+        <div class="pf-card">
+          <div class="pf-thumb">
+            <svg width="54" height="54" viewBox="0 0 64 64"><use href="#xa-logo"/></svg>
+          </div>
+          <div class="pf-body">
+            <h3>XATECH ERP</h3>
+            <p>Gestión empresarial: inventario, facturación, clientes y reportes para la toma de decisiones.</p>
+            <div class="chips">
+              <span class="chip">typescript</span>
+              <span class="chip">api rest</span>
+              <span class="chip">docker</span>
+            </div>
+          </div>
+        </div>
+        <div class="pf-card">
+          <div class="pf-thumb">
+            <svg width="54" height="54" viewBox="0 0 64 64"><use href="#xa-logo"/></svg>
+          </div>
+          <div class="pf-body">
+            <h3>XATECH Bot</h3>
+            <p>Asistente de atención al cliente por WhatsApp y web, integrado con los sistemas del negocio.</p>
+            <div class="chips">
+              <span class="chip">python</span>
+              <span class="chip">whatsapp api</span>
+              <span class="chip">webhooks</span>
+            </div>
+          </div>
+        </div>
       </div>
-      <form class="contact-box" id="contactForm">
-        <label for="f-nombre">Nombre</label>
-        <input id="f-nombre" type="text" name="nombre" placeholder="Tu nombre" required>
-        <label for="f-email">Correo electrónico</label>
-        <input id="f-email" type="email" name="email" placeholder="tucorreo@ejemplo.com" required>
-        <label for="f-msg">Mensaje</label>
-        <textarea id="f-msg" name="mensaje" placeholder="Cuéntanos qué necesitas..." required></textarea>
-        <button type="submit" class="btn btn-primary">Enviar mensaje</button>
-        <p class="form-status" id="formStatus"></p>
-      </form>
+    </div>
+  </section>
+
+  <!-- 04 · Consultoría -->
+  <section id="consultoria">
+    <div class="container">
+      <span class="sec-label">04 · consultoría</span>
+      <div class="split">
+        <div>
+          <h2 class="sec-title">Consultoría e intermediación que sí aterriza</h2>
+          <p class="sec-desc" style="margin-bottom:0">No vendemos tecnología por vender: analizamos tu operación, te decimos qué conviene y negociamos por ti con los proveedores.</p>
+          <ul class="checklist">
+            <li><span class="tick">✔</span>Diagnóstico honesto del estado actual de tu tecnología.</li>
+            <li><span class="tick">✔</span>Comparación de proveedores, licencias y costos sin sesgos.</li>
+            <li><span class="tick">✔</span>Hoja de ruta priorizada según impacto y presupuesto.</li>
+            <li><span class="tick">✔</span>Acompañamiento en la implementación y adopción.</li>
+          </ul>
+        </div>
+        <div class="steps">
+          <div class="step">
+            <span class="step-num">01</span>
+            <div>
+              <h4>Escuchamos</h4>
+              <p>Sesión inicial para entender tu negocio, tus procesos y tus dolores tecnológicos.</p>
+            </div>
+          </div>
+          <div class="step">
+            <span class="step-num">02</span>
+            <div>
+              <h4>Proponemos</h4>
+              <p>Entregamos un plan claro con alternativas, costos y tiempos — tú decides.</p>
+            </div>
+          </div>
+          <div class="step">
+            <span class="step-num">03</span>
+            <div>
+              <h4>Ejecutamos</h4>
+              <p>Implementamos o coordinamos a los terceros, y respondemos por el resultado.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 · Proceso -->
+  <section id="proceso" class="alt">
+    <div class="container">
+      <span class="sec-label">05 · proceso</span>
+      <h2 class="sec-title">Cómo trabajamos</h2>
+      <p class="sec-desc">Un proceso simple y transparente, con entregas frecuentes y comunicación directa.</p>
+      <div class="proc-grid">
+        <div class="proc">
+          <span class="n">/01</span>
+          <h4>Descubrimiento</h4>
+          <p>Levantamos requerimientos y definimos el alcance junto a tu equipo.</p>
+        </div>
+        <div class="proc">
+          <span class="n">/02</span>
+          <h4>Diseño y plan</h4>
+          <p>Arquitectura, prototipos y cronograma con hitos verificables.</p>
+        </div>
+        <div class="proc">
+          <span class="n">/03</span>
+          <h4>Desarrollo iterativo</h4>
+          <p>Entregas cortas y demostrables; ves el avance semana a semana.</p>
+        </div>
+        <div class="proc">
+          <span class="n">/04</span>
+          <h4>Entrega y soporte</h4>
+          <p>Despliegue, capacitación y mantenimiento continuo del sistema.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 · Testimonios -->
+  <section id="testimonios">
+    <div class="container">
+      <span class="sec-label">06 · testimonios</span>
+      <h2 class="sec-title">Lo que dicen nuestros clientes</h2>
+      <p class="sec-desc">Relaciones de largo plazo construidas sobre resultados.</p>
+      <div class="ts-grid">
+        <div class="ts-card">
+          <span class="quote">"</span>
+          <p>Nos entregaron el sistema a tiempo y con todo lo prometido. La comunicación durante el proyecto fue impecable.</p>
+          <div class="ts-who">
+            <span class="ts-avatar">MC</span>
+            <div><strong>María C.</strong><span>gerente · retail</span></div>
+          </div>
+        </div>
+        <div class="ts-card">
+          <span class="quote">"</span>
+          <p>Como intermediarios nos ahorraron meses de búsqueda de proveedores y un costo importante en licencias.</p>
+          <div class="ts-who">
+            <span class="ts-avatar">JR</span>
+            <div><strong>Jorge R.</strong><span>director · logística</span></div>
+          </div>
+        </div>
+        <div class="ts-card">
+          <span class="quote">"</span>
+          <p>El soporte responde rápido y de verdad resuelve. Se siente que conocen nuestro negocio, no solo el código.</p>
+          <div class="ts-who">
+            <span class="ts-avatar">AP</span>
+            <div><strong>Ana P.</strong><span>coordinadora · servicios</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 · Stack -->
+  <section id="stack" class="alt">
+    <div class="container">
+      <span class="sec-label">07 · stack</span>
+      <h2 class="sec-title">Tecnologías que dominamos</h2>
+      <p class="sec-desc">Elegimos la herramienta según el problema — no al revés.</p>
+      <div class="stack-chips">
+        <span class="stack-chip">javascript</span>
+        <span class="stack-chip">typescript</span>
+        <span class="stack-chip">react</span>
+        <span class="stack-chip">node.js</span>
+        <span class="stack-chip">python</span>
+        <span class="stack-chip">php</span>
+        <span class="stack-chip">postgresql</span>
+        <span class="stack-chip">mysql</span>
+        <span class="stack-chip">docker</span>
+        <span class="stack-chip">aws</span>
+        <span class="stack-chip">linux</span>
+        <span class="stack-chip">git</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 08 · Planes -->
+  <section id="planes">
+    <div class="container">
+      <span class="sec-label">08 · planes</span>
+      <h2 class="sec-title">Formas de trabajar juntos</h2>
+      <p class="sec-desc">Tres modalidades según lo que tu empresa necesite hoy.</p>
+      <div class="plan-grid">
+        <div class="plan">
+          <span class="kind">modalidad_01</span>
+          <h3>Proyecto</h3>
+          <p class="desc">Un desarrollo con alcance, tiempo y costo definidos de principio a fin.</p>
+          <ul>
+            <li>Alcance y cotización cerrados</li>
+            <li>Entregas por hitos</li>
+            <li>Garantía post-entrega</li>
+          </ul>
+          <a href="#contacto" class="btn btn-outline">Cotizar proyecto</a>
+        </div>
+        <div class="plan featured">
+          <span class="plan-flag">más elegido</span>
+          <span class="kind">modalidad_02</span>
+          <h3>Partner tecnológico</h3>
+          <p class="desc">Somos tu equipo TI de cabecera: desarrollo, soporte e intermediación continuos.</p>
+          <ul>
+            <li>Horas mensuales dedicadas</li>
+            <li>Soporte prioritario 24/7</li>
+            <li>Roadmap tecnológico trimestral</li>
+            <li>Negociación con proveedores</li>
+          </ul>
+          <a href="#contacto" class="btn btn-green">Ser partner</a>
+        </div>
+        <div class="plan">
+          <span class="kind">modalidad_03</span>
+          <h3>Consultoría</h3>
+          <p class="desc">Diagnóstico y hoja de ruta para decidir bien antes de invertir.</p>
+          <ul>
+            <li>Evaluación del estado actual</li>
+            <li>Comparativa de alternativas</li>
+            <li>Plan priorizado por impacto</li>
+          </ul>
+          <a href="#contacto" class="btn btn-outline">Agendar sesión</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contacto -->
+  <section id="contacto" class="contact alt">
+    <div class="container">
+      <span class="sec-label">contacto</span>
+      <h2>¿Hablamos de tu proyecto?</h2>
+      <p>Cuéntanos qué necesitas y te respondemos con una propuesta clara, sin compromiso.</p>
+      <a href="mailto:bryandavidortiz51@gmail.com" class="btn btn-green">Escribir a XATECH</a>
+      <span class="contact-mail">$ mail <a href="mailto:bryandavidortiz51@gmail.com">bryandavidortiz51@gmail.com</a></span>
     </div>
   </section>
 
   <footer>
     <div class="container footer-inner">
-      <div class="footer-brand">
-        <svg width="24" height="24" viewBox="0 0 64 64"><use href="#xa-logo"/></svg>
-        <span>© <span id="year"></span> XATECH Services — Tecnología inteligente para tu negocio.</span>
+      <div class="brand" style="font-size:0.95rem">
+        <svg width="22" height="22" viewBox="0 0 64 64"><use href="#xa-logo"/></svg>
+        XA<em>TECH</em>
       </div>
       <ul class="footer-links">
-        <li><a href="#portafolio">Portafolio</a></li>
         <li><a href="#servicios">Servicios</a></li>
+        <li><a href="#portafolio">Portafolio</a></li>
+        <li><a href="#planes">Planes</a></li>
         <li><a href="#contacto">Contacto</a></li>
       </ul>
+      <span class="mono">© <span id="year"></span> xatech.services</span>
     </div>
   </footer>
 
@@ -780,18 +916,49 @@
     document.getElementById('year').textContent = new Date().getFullYear();
 
     const toggle = document.querySelector('.menu-toggle');
-    const nav = document.querySelector('.main-nav');
+    const nav = document.querySelector('.nav-links');
     toggle.addEventListener('click', () => nav.classList.toggle('open'));
     nav.querySelectorAll('a').forEach(a =>
       a.addEventListener('click', () => nav.classList.remove('open'))
     );
 
-    // El formulario aún no tiene backend: muestra confirmación local
-    document.getElementById('contactForm').addEventListener('submit', (e) => {
-      e.preventDefault();
-      document.getElementById('formStatus').textContent = '¡Gracias! Hemos recibido tu mensaje.';
-      e.target.reset();
-    });
+    // Terminal animada: escribe línea por línea con cursor parpadeante
+    const LINES = [
+      { html: '<span class="p">$</span> <span class="c">xatech init --proyecto</span>', delay: 350 },
+      { html: '<span class="k">➜</span> Analizando requerimientos...', delay: 550 },
+      { html: '<span class="k">➜</span> Definiendo arquitectura y plan...', delay: 550 },
+      { html: '<span class="k">➜</span> Desarrollando con entregas semanales...', delay: 600 },
+      { html: '<span class="p">✔</span> Proyecto entregado. Soporte activo <span class="c">24/7</span>.', delay: 500 },
+      { html: '', delay: 250 },
+      { html: '<span class="p">$</span> <span class="c">xatech partner --activar</span>', delay: 400 },
+      { html: '<span class="p">✔</span> Bienvenido a bordo.', delay: 0 },
+    ];
+
+    const term = document.getElementById('termBody');
+    let li = 0;
+
+    function typeLine() {
+      // Quitar cursor anterior
+      const old = term.querySelector('.cursor');
+      if (old) old.remove();
+
+      if (li >= LINES.length) {
+        // Dejar cursor final parpadeando
+        const end = document.createElement('span');
+        end.className = 'line';
+        end.innerHTML = '<span class="p">$</span> <span class="cursor"></span>';
+        term.appendChild(end);
+        return;
+      }
+
+      const line = document.createElement('span');
+      line.className = 'line';
+      line.innerHTML = LINES[li].html + ' <span class="cursor"></span>';
+      term.appendChild(line);
+      setTimeout(typeLine, LINES[li].delay + 250);
+      li++;
+    }
+    typeLine();
   </script>
 </body>
 </html>
