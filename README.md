@@ -7,7 +7,7 @@ Diseño inspirado en la estética de GitHub: tema oscuro, tarjetas tipo reposito
 ## Contenido
 
 - `index.html` — Página autocontenida (HTML + CSS + JS en un solo archivo, sin dependencias externas).
-- `logo.svg` — Logo oficial de XATECH: hexágono tipo chip con "X" de circuito y degradado azul-morado-verde.
+- `logo.svg` — Logo oficial de XATECH: cuatro pétalos en azul índigo, azul medio, azul claro y turquesa.
 - `logos/` — Logos individuales de cada producto del portafolio (SVG, 256×256): commerce, bot, erp, analytics, cloud y secure.
 
 ## Secciones de la página

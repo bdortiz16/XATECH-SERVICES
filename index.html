@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="XATECH Services — Desarrollo de software, intermediación tecnológica y consultoría TI.">
   <title>XATECH Services — Desarrollo de Software y Consultoría TI</title>
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -16,9 +17,11 @@
       --border: #232a36;
       --text: #e6e9ef;
       --muted: #9aa4b5;
-      --green: #3ec96e;
-      --green-dark: #2ea15c;
-      --violet: #9d7bff;
+      --accent: #6592ea;      /* azul medio del logo */
+      --accent-dark: #4d7de0;
+      --accent-2: #58bcd1;    /* turquesa del logo */
+      --sky: #85aef2;         /* azul claro del logo */
+      --indigo: #45518f;      /* azul índigo del logo */
       --radius: 12px;
       --radius-sm: 10px;
       --sans: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -39,14 +42,14 @@
     a { color: inherit; text-decoration: none; }
     .container { width: min(1140px, 92%); margin: 0 auto; }
 
-    ::selection { background: rgba(157, 123, 255, 0.35); }
+    ::selection { background: rgba(88, 188, 209, 0.35); }
 
-    /* ===== Etiqueta de sección (mono violeta numerada) ===== */
+    /* ===== Etiqueta de sección (mono turquesa numerada) ===== */
     .sec-label {
       font-family: var(--mono);
       font-size: 0.78rem;
       font-weight: 500;
-      color: var(--violet);
+      color: var(--accent-2);
       letter-spacing: 0.08em;
       display: block;
       margin-bottom: 0.9rem;
@@ -89,7 +92,7 @@
       font-size: 1.05rem;
       letter-spacing: 0.02em;
     }
-    .brand em { font-style: normal; color: var(--green); }
+    .brand em { font-style: normal; color: var(--accent); }
     .nav-links {
       display: flex;
       gap: 1.6rem;
@@ -127,25 +130,25 @@
       cursor: pointer;
       transition: background 0.15s, border-color 0.15s, transform 0.15s;
     }
-    .btn-green {
-      background: var(--green);
-      color: #07130b;
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
     }
-    .btn-green:hover { background: var(--green-dark); transform: translateY(-1px); }
+    .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
     .btn-outline {
       border-color: var(--border);
       color: var(--text);
       background: transparent;
     }
-    .btn-outline:hover { border-color: var(--violet); color: var(--violet); }
+    .btn-outline:hover { border-color: var(--accent-2); color: var(--accent-2); }
     .btn-sm { padding: 0.45rem 1.05rem; font-size: 0.85rem; }
 
     /* ===== 01 · Hero ===== */
     .hero {
       padding: 6rem 0 5.5rem;
       background:
-        radial-gradient(ellipse 50% 42% at 22% 0%, rgba(62, 201, 110, 0.08), transparent),
-        radial-gradient(ellipse 45% 40% at 85% 8%, rgba(157, 123, 255, 0.09), transparent);
+        radial-gradient(ellipse 50% 42% at 22% 0%, rgba(101, 146, 234, 0.08), transparent),
+        radial-gradient(ellipse 45% 40% at 85% 8%, rgba(88, 188, 209, 0.09), transparent);
     }
     .hero-grid {
       display: grid;
@@ -160,9 +163,9 @@
       gap: 0.5rem;
       font-family: var(--mono);
       font-size: 0.75rem;
-      color: var(--green);
-      border: 1px solid rgba(62, 201, 110, 0.35);
-      background: rgba(62, 201, 110, 0.08);
+      color: var(--accent);
+      border: 1px solid rgba(101, 146, 234, 0.35);
+      background: rgba(101, 146, 234, 0.08);
       border-radius: 2em;
       padding: 0.3rem 0.85rem;
       margin-bottom: 1.4rem;
@@ -170,12 +173,12 @@
     .badge-avail .pulse {
       width: 8px; height: 8px;
       border-radius: 50%;
-      background: var(--green);
+      background: var(--accent);
       animation: pulse 1.8s ease-in-out infinite;
     }
     @keyframes pulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(62, 201, 110, 0.5); }
-      50% { box-shadow: 0 0 0 6px rgba(62, 201, 110, 0); }
+      0%, 100% { box-shadow: 0 0 0 0 rgba(101, 146, 234, 0.5); }
+      50% { box-shadow: 0 0 0 6px rgba(101, 146, 234, 0); }
     }
 
     .hero h1 {
@@ -185,8 +188,8 @@
       line-height: 1.08;
       margin-bottom: 1.2rem;
     }
-    .hero h1 .g { color: var(--green); }
-    .hero h1 .v { color: var(--violet); }
+    .hero h1 .g { color: var(--accent); }
+    .hero h1 .v { color: var(--accent-2); }
     .hero p.lead { color: var(--muted); font-size: 1.12rem; max-width: 520px; margin-bottom: 2rem; }
     .hero-actions { display: flex; gap: 0.9rem; flex-wrap: wrap; margin-bottom: 2.8rem; }
 
@@ -227,7 +230,7 @@
       border-bottom: 1px solid var(--border);
     }
     .term-bar i { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
-    .term-bar .r { background: #e5534b; } .term-bar .y { background: #d4a72c; } .term-bar .g { background: var(--green); }
+    .term-bar .r { background: #e5534b; } .term-bar .y { background: #d4a72c; } .term-bar .g { background: #4bd865; }
     .term-bar span {
       margin-left: 0.6rem;
       color: var(--muted);
@@ -235,13 +238,13 @@
     }
     .term-body { padding: 1.1rem 1.2rem 1.4rem; min-height: 200px; }
     .term-body .line { display: block; white-space: pre-wrap; color: var(--muted); }
-    .term-body .p { color: var(--green); }
+    .term-body .p { color: var(--accent); }
     .term-body .c { color: var(--text); }
-    .term-body .k { color: var(--violet); }
+    .term-body .k { color: var(--accent-2); }
     .cursor {
       display: inline-block;
       width: 8px; height: 15px;
-      background: var(--green);
+      background: var(--accent);
       vertical-align: text-bottom;
       animation: blink 1s steps(1) infinite;
     }
@@ -260,13 +263,13 @@
       padding: 1.5rem;
       transition: border-color 0.15s, transform 0.15s;
     }
-    .svc-card:hover { border-color: var(--green); transform: translateY(-3px); }
+    .svc-card:hover { border-color: var(--accent); transform: translateY(-3px); }
     .svc-tag {
       font-family: var(--mono);
       font-size: 0.7rem;
-      color: var(--green);
-      background: rgba(62, 201, 110, 0.08);
-      border: 1px solid rgba(62, 201, 110, 0.25);
+      color: var(--accent);
+      background: rgba(101, 146, 234, 0.08);
+      border: 1px solid rgba(101, 146, 234, 0.25);
       border-radius: 5px;
       padding: 0.12rem 0.5rem;
       display: inline-block;
@@ -288,13 +291,13 @@
       overflow: hidden;
       transition: border-color 0.15s, transform 0.15s;
     }
-    .pf-card:hover { border-color: var(--violet); transform: translateY(-3px); }
+    .pf-card:hover { border-color: var(--accent-2); transform: translateY(-3px); }
     .pf-thumb {
       height: 150px;
       border-bottom: 1px solid var(--border);
       background:
         repeating-linear-gradient(-45deg,
-          rgba(157, 123, 255, 0.07) 0 10px,
+          rgba(88, 188, 209, 0.07) 0 10px,
           transparent 10px 20px),
         var(--bg-alt);
       display: flex;
@@ -309,9 +312,9 @@
     .chip {
       font-family: var(--mono);
       font-size: 0.68rem;
-      color: var(--violet);
-      border: 1px solid rgba(157, 123, 255, 0.3);
-      background: rgba(157, 123, 255, 0.08);
+      color: var(--accent-2);
+      border: 1px solid rgba(88, 188, 209, 0.3);
+      background: rgba(88, 188, 209, 0.08);
       border-radius: 5px;
       padding: 0.1rem 0.5rem;
     }
@@ -329,9 +332,9 @@
       flex: none;
       width: 20px; height: 20px;
       border-radius: 6px;
-      background: rgba(62, 201, 110, 0.12);
-      border: 1px solid rgba(62, 201, 110, 0.4);
-      color: var(--green);
+      background: rgba(101, 146, 234, 0.12);
+      border: 1px solid rgba(101, 146, 234, 0.4);
+      color: var(--accent);
       font-size: 0.7rem;
       display: flex;
       align-items: center;
@@ -351,15 +354,15 @@
       font-family: var(--mono);
       font-weight: 600;
       font-size: 0.95rem;
-      color: var(--violet);
+      color: var(--accent-2);
       flex: none;
       width: 38px; height: 38px;
-      border: 1px solid rgba(157, 123, 255, 0.35);
+      border: 1px solid rgba(88, 188, 209, 0.35);
       border-radius: 9px;
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(157, 123, 255, 0.07);
+      background: rgba(88, 188, 209, 0.07);
     }
     .step h4 { font-size: 1rem; font-weight: 700; margin-bottom: 0.2rem; }
     .step p { color: var(--muted); font-size: 0.88rem; }
@@ -375,11 +378,11 @@
       padding-top: 1.2rem;
       transition: border-color 0.2s;
     }
-    .proc:hover { border-top-color: var(--green); }
+    .proc:hover { border-top-color: var(--accent); }
     .proc .n {
       font-family: var(--mono);
       font-size: 0.75rem;
-      color: var(--green);
+      color: var(--accent);
       display: block;
       margin-bottom: 0.5rem;
     }
@@ -401,13 +404,13 @@
       flex-direction: column;
       gap: 1rem;
     }
-    .ts-card .quote { color: var(--violet); font-size: 1.6rem; line-height: 1; font-family: var(--mono); }
+    .ts-card .quote { color: var(--accent-2); font-size: 1.6rem; line-height: 1; font-family: var(--mono); }
     .ts-card p { color: var(--text); font-size: 0.94rem; flex: 1; }
     .ts-who { display: flex; align-items: center; gap: 0.75rem; }
     .ts-avatar {
       width: 38px; height: 38px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--green), var(--violet));
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
       display: flex;
       align-items: center;
       justify-content: center;
@@ -431,7 +434,7 @@
       padding: 0.4rem 0.9rem;
       transition: border-color 0.15s, color 0.15s;
     }
-    .stack-chip:hover { border-color: var(--green); color: var(--green); }
+    .stack-chip:hover { border-color: var(--accent); color: var(--accent); }
 
     /* ===== 08 · Planes ===== */
     .plan-grid {
@@ -450,8 +453,8 @@
       gap: 0.9rem;
     }
     .plan.featured {
-      border-color: var(--green);
-      box-shadow: 0 0 0 1px var(--green), 0 18px 50px rgba(62, 201, 110, 0.1);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent), 0 18px 50px rgba(101, 146, 234, 0.1);
       position: relative;
     }
     .plan-flag {
@@ -461,8 +464,8 @@
       transform: translateX(-50%);
       font-family: var(--mono);
       font-size: 0.68rem;
-      background: var(--green);
-      color: #07130b;
+      background: var(--accent);
+      color: #fff;
       font-weight: 600;
       border-radius: 2em;
       padding: 0.18rem 0.8rem;
@@ -473,7 +476,7 @@
     .plan p.desc { color: var(--muted); font-size: 0.88rem; }
     .plan ul { list-style: none; display: grid; gap: 0.5rem; flex: 1; }
     .plan li { font-size: 0.88rem; color: var(--muted); display: flex; gap: 0.5rem; }
-    .plan li::before { content: "→"; color: var(--green); font-family: var(--mono); }
+    .plan li::before { content: "→"; color: var(--accent); font-family: var(--mono); }
     .plan .btn { text-align: center; }
 
     /* ===== Contacto ===== */
@@ -496,7 +499,7 @@
       display: block;
       margin-top: 1.4rem;
     }
-    .contact-mail a { color: var(--violet); }
+    .contact-mail a { color: var(--accent-2); }
     .contact-mail a:hover { text-decoration: underline; }
 
     /* ===== Footer ===== */
@@ -547,20 +550,15 @@
 </head>
 <body>
 
-  <!-- Logo XATECH: hexágono chip con X de circuito -->
+  <!-- Logo XATECH: cuatro pétalos (índigo, azul, azul claro, turquesa) -->
   <svg width="0" height="0" style="position:absolute" aria-hidden="true">
     <defs>
-      <linearGradient id="xa-grad" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#3ec96e"/>
-        <stop offset="100%" stop-color="#9d7bff"/>
-      </linearGradient>
+      <path id="xa-petal" d="M14 .8C21.5.1 27 5.2 27.5 12.8 28 20.5 22.9 26.9 15 27.5 7.3 28.1.9 22.6.6 14.9.3 7.4 6.5 1.5 14 .8Z"/>
       <g id="xa-logo">
-        <path d="M32 3 58 17.5v29L32 61 6 46.5v-29Z" fill="none" stroke="url(#xa-grad)" stroke-width="4" stroke-linejoin="round"/>
-        <path d="M21 21 32 32 21 43 M43 21 32 32l11 11" fill="none" stroke="url(#xa-grad)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="21" cy="21" r="3.2" fill="#3ec96e"/>
-        <circle cx="43" cy="21" r="3.2" fill="#9d7bff"/>
-        <circle cx="21" cy="43" r="3.2" fill="#9d7bff"/>
-        <circle cx="43" cy="43" r="3.2" fill="#3ec96e"/>
+        <use href="#xa-petal" transform="translate(2.5 3) rotate(-4 14 14)" fill="#45518f"/>
+        <use href="#xa-petal" transform="translate(34.5 2.5) rotate(6 14 14)" fill="#6592ea"/>
+        <use href="#xa-petal" transform="translate(2 34.5) rotate(5 14 14)" fill="#85aef2"/>
+        <use href="#xa-petal" transform="translate(34 34) rotate(-6 14 14)" fill="#58bcd1"/>
       </g>
     </defs>
   </svg>
@@ -579,7 +577,7 @@
           <li><a href="#consultoria">Consultoría</a></li>
           <li><a href="#proceso">Proceso</a></li>
           <li><a href="#planes">Planes</a></li>
-          <li><a href="#contacto" class="btn btn-green btn-sm">Contactar</a></li>
+          <li><a href="#contacto" class="btn btn-primary btn-sm">Contactar</a></li>
         </ul>
       </nav>
     </div>
@@ -594,7 +592,7 @@
         <h1>Software a la medida, <span class="g">bien construido</span> y <span class="v">bien asesorado</span>.</h1>
         <p class="lead">XATECH Services desarrolla software, conecta empresas con la tecnología correcta y acompaña tu operación TI de principio a fin.</p>
         <div class="hero-actions">
-          <a href="#contacto" class="btn btn-green">Iniciar un proyecto</a>
+          <a href="#contacto" class="btn btn-primary">Iniciar un proyecto</a>
           <a href="#portafolio" class="btn btn-outline">Ver portafolio</a>
         </div>
         <div class="metrics">
@@ -868,7 +866,7 @@
             <li>Roadmap tecnológico trimestral</li>
             <li>Negociación con proveedores</li>
           </ul>
-          <a href="#contacto" class="btn btn-green">Ser partner</a>
+          <a href="#contacto" class="btn btn-primary">Ser partner</a>
         </div>
         <div class="plan">
           <span class="kind">modalidad_03</span>
@@ -891,7 +889,7 @@
       <span class="sec-label">contacto</span>
       <h2>¿Hablamos de tu proyecto?</h2>
       <p>Cuéntanos qué necesitas y te respondemos con una propuesta clara, sin compromiso.</p>
-      <a href="mailto:bryandavidortiz51@gmail.com" class="btn btn-green">Escribir a XATECH</a>
+      <a href="mailto:bryandavidortiz51@gmail.com" class="btn btn-primary">Escribir a XATECH</a>
       <span class="contact-mail">$ mail <a href="mailto:bryandavidortiz51@gmail.com">bryandavidortiz51@gmail.com</a></span>
     </div>
   </section>
