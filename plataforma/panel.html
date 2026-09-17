@@ -3,69 +3,156 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>XATECH P2P — Órdenes</title>
+  <title>XATECH P2P — Panel</title>
   <link rel="icon" type="image/svg+xml" href="logo.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="app.css">
 </head>
 <body>
-  <header>
-    <div class="topbar">
-      <div class="brand">
-        <svg width="26" height="26" viewBox="0 0 64 64" aria-hidden="true">
-          <path id="pt" d="M14 .8C21.5.1 27 5.2 27.5 12.8 28 20.5 22.9 26.9 15 27.5 7.3 28.1.9 22.6.6 14.9.3 7.4 6.5 1.5 14 .8Z" fill="none"/>
-          <use href="#pt" transform="translate(2.5 3) rotate(-4 14 14)" fill="#45518f"/>
-          <use href="#pt" transform="translate(34.5 2.5) rotate(6 14 14)" fill="#6592ea"/>
-          <use href="#pt" transform="translate(2 34.5) rotate(5 14 14)" fill="#85aef2"/>
-          <use href="#pt" transform="translate(34 34) rotate(-6 14 14)" fill="#58bcd1"/>
-        </svg>
+<div class="shell">
+
+  <!-- ===== Sidebar ===== -->
+  <aside class="sidebar">
+    <div class="logo-row">
+      <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
+        <circle cx="10" cy="10" r="6" fill="#6FA1F2"/>
+        <circle cx="24" cy="10" r="6" fill="#86BBF1"/>
+        <circle cx="10" cy="24" r="6" fill="#4665D2"/>
+        <circle cx="24" cy="24" r="6" fill="#8A93B8"/>
+      </svg>
+      <div class="logo-name">
         <strong>XA<em>TECH</em></strong>
-        <span class="module">/ módulo p2p</span>
-      </div>
-      <div class="top-right">
-        <span class="mode" id="modeBadge">...</span>
-        <button class="ghost" id="btnRefresh" title="Actualizar órdenes">⟳</button>
-        <button class="ghost" id="btnLogout">Salir</button>
+        <span>módulo p2p</span>
       </div>
     </div>
-  </header>
 
-  <main>
-    <div class="stats" id="stats"></div>
+    <nav class="nav">
+      <button class="nav-item active"><span class="ni">▦</span> Panel de usuario</button>
+      <button class="nav-item"><span class="ni">≡</span> Orden</button>
+      <button class="nav-item"><span class="ni">✉</span> Chat <span class="badge">99+</span></button>
+      <button class="nav-item"><span class="ni">▤</span> Anuncio</button>
+      <button class="nav-item"><span class="ni">▥</span> Ofertas de anuncios</button>
+      <button class="nav-item"><span class="ni">✦</span> Campañas <span class="tag-new">Nuevo</span></button>
+      <button class="nav-item"><span class="ni">▧</span> Cuenta de fondos</button>
+      <button class="nav-item"><span class="ni">◉</span> Perfil</button>
+      <button class="nav-item"><span class="ni">◎</span> Notificación <span class="badge">13</span></button>
+      <button class="nav-item"><span class="ni">?</span> FAQ</button>
+      <button class="nav-item"><span class="ni">☏</span> Atención al cliente</button>
+    </nav>
 
-    <div class="tabs" id="tabs">
-      <button data-tab="activas" class="active">Activas</button>
-      <button data-tab="verificar">Por verificar</button>
-      <button data-tab="completadas">Completadas</button>
-      <button data-tab="todas">Todas</button>
-    </div>
+    <div class="conn"><span class="conn-dot"></span><span id="connStatus">Conectado · modo demo</span></div>
+  </aside>
 
-    <div class="layout">
-      <section class="orders-panel">
-        <table>
-          <thead>
-            <tr>
-              <th>Orden</th><th>Tipo</th><th>Activo</th><th>Precio</th>
-              <th>Total</th><th>Contraparte</th><th>Estado</th>
-            </tr>
-          </thead>
-          <tbody id="ordersBody"></tbody>
-        </table>
+  <!-- ===== Main ===== -->
+  <div class="main">
+
+    <header class="hdr">
+      <div class="chips">
+        <span class="chip">COP/USD <b class="mono">COL$ 3.164,01</b></span>
+        <span class="chip">USDT <b class="mono">COL$ 4.170</b></span>
+        <span class="chip" id="chipPending">0 orden(es) pendiente(s)</span>
+      </div>
+      <div class="hdr-actions">
+        <button class="btn btn-primary" id="btnPublish">Publicar anuncio</button>
+        <button class="btn btn-outline" id="btnLogout">Salir</button>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <div class="banner" id="promoBanner">
+        <div>
+          <strong>¡Impulsa tus operaciones con las ofertas de anuncios P2P!</strong>
+          <p>Realiza ofertas por publicaciones prémium de anuncios para aumentar tu visibilidad y atraer más operaciones. <a href="#">Ver más</a></p>
+        </div>
+        <button class="btn btn-primary" id="btnOffer">Hacer oferta ahora</button>
+        <button class="banner-x" id="bannerClose" aria-label="Cerrar">✕</button>
+      </div>
+
+      <div class="stats" id="stats"></div>
+
+      <div class="mid-grid">
+        <div class="col-left">
+
+          <section class="card">
+            <div class="card-head"><h2>Agenda</h2><span class="mono muted" id="agendaMonth"></span></div>
+            <div class="week" id="week"></div>
+            <div class="agenda-event"><span class="mono">08:00</span><i></i>Revisión de liquidez COP · turno mañana</div>
+          </section>
+
+          <section class="card">
+            <div class="card-head"><h2>Órdenes</h2><span class="muted">›</span></div>
+            <div class="kv-row"><span>⏱ Pendiente</span><b class="mono" id="kpiPend">0</b></div>
+            <div class="kv-row"><span>▤ Historial</span><b class="mono" id="kpiHist">0</b></div>
+          </section>
+
+          <section class="card">
+            <div class="card-head"><h2>Anuncios</h2><span class="muted">＋</span></div>
+            <div class="kv-row"><span><i class="dot g"></i> En línea</span><b class="mono">0</b></div>
+            <div class="kv-row"><span><i class="dot r"></i> Desactivado</span><b class="mono">8</b></div>
+          </section>
+
+        </div>
+
+        <!-- Libro de órdenes -->
+        <section class="card orderbook">
+          <div class="card-head">
+            <h2>Libro de órdenes</h2>
+            <button class="select-pill">Todos los anuncios ▾</button>
+          </div>
+          <div class="asset-tabs" id="assetTabs">
+            <button class="active">USDT</button><button>BTC</button><button>USDC</button><button>FDUSD</button>
+            <button>BNB</button><button>ETH</button><button>DOGE</button><button>ADA</button><button>XRP</button><button>WLD</button>
+          </div>
+          <div class="ratio-bar"><span class="sell" style="flex-basis:91.4%">91,4%</span><span class="buy" style="flex-basis:8.6%">8,6%</span></div>
+          <p class="best">Mejor precio de venta: <b class="mono red">COL$ 3142.01</b></p>
+          <p class="best">Mejor precio de compra: <b class="mono green">COL$ 3093</b></p>
+          <div class="depth-select" id="depthSelect">
+            <button class="active" data-n="5">5</button><button data-n="10">10</button><button data-n="20">20</button>
+          </div>
+          <div class="depth">
+            <div class="depth-head"><span>Precio fiat (COP)</span><span>Número de anuncios</span><span>Importe (USDT)</span></div>
+            <div id="depthRows"></div>
+          </div>
+          <p class="ref-note">Solo como referencia, pues los datos pueden variar.</p>
+        </section>
+      </div>
+
+      <!-- Tabla de órdenes -->
+      <section class="card orders-card">
+        <div class="tabs" id="tabs">
+          <button data-tab="activas" class="active">Activas</button>
+          <button data-tab="verificar">Por verificar</button>
+          <button data-tab="completadas">Completadas</button>
+          <button data-tab="todas">Todas</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Orden</th><th>Tipo</th><th>Activo</th><th>Precio</th><th>Total</th><th>Estado</th></tr>
+            </thead>
+            <tbody id="ordersBody"></tbody>
+          </table>
+        </div>
         <p class="empty" id="emptyMsg" hidden>No hay órdenes en esta pestaña.</p>
       </section>
 
-      <aside class="detail-panel" id="detailPanel">
-        <p class="empty">Selecciona una orden para gestionarla.</p>
-      </aside>
-    </div>
-  </main>
+      <!-- Panel de gestión -->
+      <section class="card manage" id="detailPanel">
+        <div class="empty-state">
+          <span class="empty-ico">⇢</span>
+          <p>Selecciona una orden para gestionarla.</p>
+        </div>
+      </section>
 
-  <div class="modal-back" id="modalBack" hidden>
-    <div class="modal" id="modalBox"></div>
+    </main>
   </div>
+</div>
 
-  <script src="app.js"></script>
+<div class="modal-back" id="modalBack" hidden><div class="modal" id="modalBox"></div></div>
+
+<script src="app.js"></script>
 </body>
 </html>
