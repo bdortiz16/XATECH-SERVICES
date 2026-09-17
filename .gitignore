@@ -1,4 +1,4 @@
-app/data/
-app/.env
+data/
+.env
 .env
 node_modules/

@@ -1,0 +1,5 @@
+{
+  "name": "xatech-services",
+  "private": true,
+  "engines": { "node": ">=18" }
+}

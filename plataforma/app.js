@@ -32,7 +32,7 @@ async function api(path, opts = {}) {
     ...opts,
     body: opts.body ? JSON.stringify(opts.body) : undefined,
   });
-  if (res.status === 401) { location.href = '/'; throw new Error('sesión'); }
+  if (res.status === 401) { location.href = '/plataforma/'; throw new Error('sesión'); }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.error || `Error ${res.status}`);
   return data;
@@ -372,7 +372,7 @@ $('#tabs').addEventListener('click', (e) => {
 $('#btnRefresh').addEventListener('click', refresh);
 $('#btnLogout').addEventListener('click', async () => {
   await api('/api/logout', { method: 'POST' });
-  location.href = '/';
+  location.href = '/plataforma/';
 });
 
 boot().catch((e) => toast(e.message, true));

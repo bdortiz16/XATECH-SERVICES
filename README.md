@@ -6,7 +6,7 @@ Estética dev oscura con la paleta de la marca: azul índigo `#45518f`, azul `#6
 
 ## Contenido
 
-- `app/` — **Plataforma XATECH P2P**: login + módulo de operaciones Binance P2P (órdenes, chat, KYC, verificación de pagos, liberación y facturación Siigo). Ver `app/README.md`.
+- `plataforma/` + `api/` + `lib/` — **Plataforma XATECH P2P** (Vercel + Supabase): login + módulo de operaciones Binance P2P (órdenes, chat, KYC, verificación de pagos, liberación y facturación Siigo). Despliegue sin terminal: ver `DEPLOY.md`.
 
 - `index.html` — Landing page autocontenida (HTML + CSS + JS en un solo archivo; solo carga las fuentes de Google Fonts).
 - `logo.svg` — Logo oficial de XATECH: cuatro pétalos en azul índigo, azul medio, azul claro y turquesa.
