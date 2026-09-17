@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XATECH P2P — Órdenes</title>
+  <link rel="icon" type="image/svg+xml" href="logo.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div class="brand">
+        <svg width="26" height="26" viewBox="0 0 64 64" aria-hidden="true">
+          <path id="pt" d="M14 .8C21.5.1 27 5.2 27.5 12.8 28 20.5 22.9 26.9 15 27.5 7.3 28.1.9 22.6.6 14.9.3 7.4 6.5 1.5 14 .8Z" fill="none"/>
+          <use href="#pt" transform="translate(2.5 3) rotate(-4 14 14)" fill="#45518f"/>
+          <use href="#pt" transform="translate(34.5 2.5) rotate(6 14 14)" fill="#6592ea"/>
+          <use href="#pt" transform="translate(2 34.5) rotate(5 14 14)" fill="#85aef2"/>
+          <use href="#pt" transform="translate(34 34) rotate(-6 14 14)" fill="#58bcd1"/>
+        </svg>
+        <strong>XA<em>TECH</em></strong>
+        <span class="module">/ módulo p2p</span>
+      </div>
+      <div class="top-right">
+        <span class="mode" id="modeBadge">...</span>
+        <button class="ghost" id="btnRefresh" title="Actualizar órdenes">⟳</button>
+        <button class="ghost" id="btnLogout">Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="stats" id="stats"></div>
+
+    <div class="tabs" id="tabs">
+      <button data-tab="activas" class="active">Activas</button>
+      <button data-tab="verificar">Por verificar</button>
+      <button data-tab="completadas">Completadas</button>
+      <button data-tab="todas">Todas</button>
+    </div>
+
+    <div class="layout">
+      <section class="orders-panel">
+        <table>
+          <thead>
+            <tr>
+              <th>Orden</th><th>Tipo</th><th>Activo</th><th>Precio</th>
+              <th>Total</th><th>Contraparte</th><th>Estado</th>
+            </tr>
+          </thead>
+          <tbody id="ordersBody"></tbody>
+        </table>
+        <p class="empty" id="emptyMsg" hidden>No hay órdenes en esta pestaña.</p>
+      </section>
+
+      <aside class="detail-panel" id="detailPanel">
+        <p class="empty">Selecciona una orden para gestionarla.</p>
+      </aside>
+    </div>
+  </main>
+
+  <div class="modal-back" id="modalBack" hidden>
+    <div class="modal" id="modalBox"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
