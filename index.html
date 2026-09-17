@@ -106,6 +106,10 @@
       transition: color 0.15s;
     }
     .nav-links a:hover { color: var(--text); }
+    /* Los botones del menú no heredan el gris de los enlaces */
+    .nav-links a.btn-primary, .nav-links a.btn-primary:hover { color: #fff; }
+    .nav-links a.btn-outline { color: var(--text); }
+    .nav-links a.btn-outline:hover { color: var(--accent-2); }
     .menu-toggle {
       display: none;
       margin-left: auto;
