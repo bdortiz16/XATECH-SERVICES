@@ -11,6 +11,7 @@ const siigo = require('../../../lib/siigo');
 const kyc = require('../../../lib/kyc');
 const store = require('../../../lib/store');
 const { viewOrder, stageOf } = require('../../../lib/orders');
+const chatbot = require('../../../lib/chatbot');
 const rc = require('../../../lib/runtime-config');
 
 module.exports = async (req, res) => {
@@ -28,6 +29,20 @@ module.exports = async (req, res) => {
       res.status(200).json({ ...extra, order: viewOrder(order, st) });
 
     switch (action) {
+      // Mensaje ENTRANTE del cliente (webhook real o simulador demo): el bot responde
+      case 'chat-in': {
+        const text = (body.text || '').trim();
+        if (!text) return res.status(400).json({ error: 'Mensaje vacío' });
+        const r = await chatbot.onIncoming(order, st, text);
+        return reply({ bot: r });
+      }
+
+      case 'bot-greet': {
+        const greeted = await chatbot.greet(order, st);
+        if (!greeted) return res.status(409).json({ error: 'El bot ya saludó en esta orden' });
+        return reply();
+      }
+
       case 'chat': {
         const text = (body.text || '').trim();
         if (!text) return res.status(400).json({ error: 'Mensaje vacío' });
@@ -92,6 +107,8 @@ module.exports = async (req, res) => {
         if (order.tradeType !== 'BUY') return res.status(400).json({ error: 'Solo aplica a compras' });
         if (order.counterparty.isNew && st.kyc.status !== 'approved')
           return res.status(409).json({ error: 'Bloqueado: la contraparte es nueva y no ha aprobado el KYC' });
+        if (st.bot?.step === 'blocked')
+          return res.status(409).json({ error: 'Bloqueado por el bot: el nombre no coincide con el titular del perfil' });
         st.markedPaid = true;
         await store.addChat(
           order.orderNumber,

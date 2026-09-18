@@ -1063,6 +1063,7 @@ function renderThread(o) {
         <span class="side ${o.tradeType}">${o.tradeType === 'SELL' ? 'VENTA' : 'COMPRA'}</span>
         <span class="mono">${o.amount} ${o.asset} · $${fmt(o.totalPrice)} ${o.fiat}</span>
         <span class="pill st-${o.stage}">${STAGE_LABEL[o.stage]}</span>
+        <button class="btn btn-outline btn-sm" id="threadGreet">🤖 Saludar</button>
         <button class="btn btn-outline btn-sm" id="threadManage">Gestionar orden</button>
       </div>
     </div>
@@ -1071,7 +1072,7 @@ function renderThread(o) {
       ${L.chat
         .map(
           (m) =>
-            `<div class="msg ${m.from === 'me' ? 'me' : m.from === 'system' ? 'system' : 'them'}">${escapeHtml(m.text)}${
+            `<div class="msg ${m.from === 'me' ? 'me' : m.from === 'system' ? 'system' : 'them'}">${m.kind === 'bot' ? '<span class="bot-tag">🤖 bot</span>' : ''}${escapeHtml(m.text)}${
               m.from !== 'system' ? `<span class="t">${new Date(m.at).toLocaleTimeString('es-CO')}</span>` : ''
             }</div>`
         )
@@ -1080,7 +1081,12 @@ function renderThread(o) {
     <form class="thread-input" id="threadForm">
       <input id="threadText" placeholder="Escribir mensaje..." autocomplete="off">
       <button type="submit" aria-label="Enviar">➤</button>
-    </form>`;
+    </form>
+    ${ME.demo.binance ? `
+    <form class="thread-input sim" id="simForm" title="Solo en modo demo: escribe como si fueras el cliente y el bot responderá">
+      <input id="simText" placeholder="🧪 Simular mensaje del CLIENTE (demo) — el bot responde solo" autocomplete="off">
+      <button type="submit">➤</button>
+    </form>` : ''}`;
 
   const msgs = $('#threadMsgs');
   msgs.scrollTop = msgs.scrollHeight;
@@ -1088,6 +1094,25 @@ function renderThread(o) {
   $('#threadManage').addEventListener('click', () => {
     showView('panel');
     selectOrder(o.orderNumber);
+  });
+
+  $('#threadGreet')?.addEventListener('click', async () => {
+    try {
+      await api(`/api/orders/${o.orderNumber}/bot-greet`, { method: 'POST', body: {} });
+      await refresh(); renderChat();
+      toast('El bot saludó al cliente 🤖');
+    } catch (e) { toast(e.message, true); }
+  });
+
+  $('#simForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = $('#simText').value.trim();
+    if (!text) return;
+    $('#simText').value = '';
+    try {
+      await api(`/api/orders/${o.orderNumber}/chat-in`, { method: 'POST', body: { text } });
+      await refresh(); renderChat();
+    } catch (err) { toast(err.message, true); }
   });
 
   $('#threadForm').addEventListener('submit', async (e) => {
@@ -1389,6 +1414,7 @@ function renderPerfil() {
     .join('');
 
   applyPauseUI();
+  api('/api/chatbot').then((r) => { $('#swChatbot').checked = r.enabled; }).catch(() => {});
 }
 
 $('#perfilTabs').addEventListener('click', (e) => {
@@ -1406,6 +1432,13 @@ $('#swApi').addEventListener('change', (e) => {
   saveSettings();
   toast(SETTINGS.apiPaused ? 'API en pausa — solo lectura' : 'API activa de nuevo ✔');
 });
+$('#swChatbot').addEventListener('change', async (e) => {
+  try {
+    await api('/api/chatbot', { method: 'POST', body: { enabled: e.target.checked } });
+    toast(e.target.checked ? 'Bot de atención activado 🤖' : 'Bot de atención desactivado');
+  } catch (err) { toast(err.message, true); }
+});
+
 $('#swAuto').addEventListener('change', (e) => {
   SETTINGS.auto = e.target.checked;
   saveSettings();
