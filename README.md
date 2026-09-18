@@ -35,3 +35,5 @@ python3 -m http.server 8000
 ```
 
 La página es responsive (móvil y escritorio) y no requiere instalación ni build.
+
+<!-- Última actualización: 2026-09-18 -->
