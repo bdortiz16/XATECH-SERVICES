@@ -92,6 +92,26 @@ module.exports = async (req, res) => {
     }
   }
 
+  // Órdenes P2P que realmente devuelve Binance (últimos 6 meses)
+  if (!config.demoBinance) {
+    try {
+      const binance = require('../lib/binance');
+      const orders = await binance.listOrders();
+      const ventas = orders.filter((o) => o.tradeType === 'SELL').length;
+      const compras = orders.filter((o) => o.tradeType === 'BUY').length;
+      out.c2c_ordenes_6meses = { total: orders.length, ventas, compras };
+      if (orders.length) {
+        const fechas = orders.map((o) => o.createdAt).sort();
+        out.c2c_rango = { primera: fechas[0], ultima: fechas[fechas.length - 1] };
+      } else {
+        out.c2c_nota =
+          'Binance no devuelve órdenes: este endpoint solo cubre los últimos 6 meses. Si tus operaciones son más antiguas, la lista queda vacía hasta que vuelvas a operar.';
+      }
+    } catch (e) {
+      out.c2c_error = String(e.message).slice(0, 200);
+    }
+  }
+
   out.siigo = config.demoSiigo ? 'modo demo (sin llaves)' : 'llaves encontradas ✔';
   out.didit_kyc = config.demoKyc ? 'modo demo (sin llaves)' : 'llaves encontradas ✔';
 
