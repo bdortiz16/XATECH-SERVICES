@@ -707,7 +707,7 @@ function renderAds() {
         <span class="sub">${fdate(a.created)}</span>
       </div></td>
       <td><div class="ad-state">
-        <span class="lbl">${paused ? 'En pausa ⏸' : a.status === 'online' ? 'En línea' : a.status === 'private' ? 'Privado' : 'Desconectado'}</span>
+        <span class="lbl">${paused ? 'En pausa ⏸' : a.status === 'online' ? 'En línea<span class="sub"> · solo XATECH</span>' : a.status === 'private' ? 'Privado' : 'Desconectado'}</span>
         <label class="switch"><input type="checkbox" data-toggle="${a.id}" ${a.status === 'online' ? 'checked' : ''} ${paused ? 'disabled' : ''}><i></i></label>
       </div></td>
       <td><div class="icon-btns">
