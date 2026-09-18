@@ -796,3 +796,11 @@ textarea.f-input { resize: vertical; min-height: 70px; font-family: inherit; }
   padding: .75rem 1.1rem; font-size: .88rem;
 }
 .pause-banner span { flex: 1; min-width: 240px; }
+
+/* Aviso de espejo local (sin API de comerciante todavía) */
+.sync-note {
+  border: 1px solid rgba(76, 130, 247, .35); border-radius: var(--radius);
+  background: rgba(76, 130, 247, .07); padding: .75rem 1.1rem;
+  font-size: .85rem; color: var(--muted); line-height: 1.55;
+}
+.sync-note b { color: var(--text); }

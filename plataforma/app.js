@@ -694,7 +694,7 @@ function renderAds() {
         <span class="sub">${a.pair}</span>
       </div></td>
       <td><div class="cell-stack">
-        <span class="mono">${fmt(a.amount)} ${a.asset}</span>
+        <span class="mono">${a.amount ? `${fmt(a.amount)} ${a.asset}` : '<span class="muted">sin definir ✎</span>'}</span>
         <span class="sub mono">${fmt(a.minLimit)} ~ ${fmt(a.maxLimit)} ${a.fiat}</span>
       </div></td>
       <td><div class="cell-stack">
@@ -725,7 +725,7 @@ function renderAds() {
         const r = await api('/api/ads', { method: 'POST', body: { action: 'toggle', id: e.target.dataset.toggle, online: e.target.checked } });
         ADS = r.ads;
         renderAds();
-        toast(e.target.checked ? 'Anuncio en línea ✔' : 'Anuncio desconectado');
+        toast(e.target.checked ? 'Anuncio en línea ✔ · solo en XATECH (recuerda aplicarlo en Binance)' : 'Anuncio desconectado · solo en XATECH');
       } catch (err) { toast(err.message, true); }
     })
   );
@@ -744,6 +744,7 @@ function renderAds() {
       const ok = await modal(`
         <h3>Eliminar anuncio</h3>
         <p>¿Eliminar el anuncio <span class="mono">${a.id}</span> (${a.type === 'SELL' ? 'Vender' : 'Comprar'} ${a.pair})?</p>
+        <p class="sub">Solo se elimina de XATECH: en Binance el anuncio sigue existiendo hasta que lo borres en el portal (la API de comerciante aún no está habilitada).</p>
         <div class="modal-actions">
           <button type="button" class="btn btn-outline" data-r="no">Cancelar</button>
           <button type="button" class="btn btn-red" data-r="ok">Eliminar</button>
@@ -752,7 +753,7 @@ function renderAds() {
       const r = await api('/api/ads', { method: 'POST', body: { action: 'delete', id: a.id } });
       ADS = r.ads;
       renderAds();
-      toast('Anuncio eliminado');
+      toast('Anuncio eliminado de XATECH · en Binance sigue igual (elimínalo en el portal)');
     })
   );
   document.querySelectorAll('.ad-check, #adCheckAll').forEach((c) =>
@@ -1088,7 +1089,7 @@ async function adForm(existing = null) {
       ADS = r2.ads;
       renderAds();
       close();
-      toast(isEdit ? 'Anuncio actualizado ✔' : 'Anuncio creado ✔');
+      toast(isEdit ? 'Anuncio actualizado ✔ · solo en XATECH (aplica el cambio en Binance)' : 'Anuncio creado ✔ · solo en XATECH');
     } catch (e) {
       toast(e.message, true);
     }
