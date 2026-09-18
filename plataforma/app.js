@@ -682,6 +682,7 @@ function renderAds() {
   const rows = ADS.filter((a) => (ADTAB === 'activos' ? a.status !== 'private' : a.status === 'private')).filter(adFiltersPass);
   $('#adEmpty').hidden = rows.length > 0;
   const paused = SETTINGS.bizPaused;
+  $('#adPauseBanner').hidden = !paused;
   $('#adBody').innerHTML = rows
     .map(
       (a) => `
@@ -760,99 +761,338 @@ function renderAds() {
   updateBulk();
 }
 
-// ---- Editor de anuncio (como el formulario de Binance) ----
+// ---- Editor de anuncio (asistente en 3 pasos, como el de Binance) ----
+
+const PAY_METHODS = ['Nequi', 'Bancolombia S.A', 'Bre-B (llave)', 'Daviplata', 'DAVIbank', 'Movii', 'BBVA', 'Efectivo'];
+const AD_ASSETS = ['USDT', 'USDC', 'BTC', 'ETH', 'SOL', 'BNB', 'FDUSD'];
 
 async function adForm(existing = null) {
-  const a = existing || {
+  const isEdit = !!existing?.id;
+  const a = {
     type: 'SELL', asset: 'USDT', fiat: 'COP', priceType: 'FIXED', price: 4170,
     floatMargin: 100, amount: 0, minLimit: 100000, maxLimit: 5000000,
-    methods: ['Bre-B (llave)'], payTime: 15, terms: '', autoReply: '', status: 'offline',
+    methods: ['Bre-B (llave)'], payTime: 15, terms: '', autoReply: '',
+    kycRequired: false, regDays: 0, status: 'offline',
+    ...(existing || {}),
   };
-  const chk = (v, x) => (v === x ? 'checked' : '');
-  const p = modal(`
-    <h3>${existing?.id ? 'Editar anuncio' : 'Publicar un nuevo anuncio'} ${existing?.id ? `<span class="mono muted" style="font-size:.75rem">#${existing.id}</span>` : ''}</h3>
-    <div class="ledger-form">
-      <div class="radio-row">
-        <label><input type="radio" name="afType" value="SELL" ${chk(a.type, 'SELL')}> Vender</label>
-        <label><input type="radio" name="afType" value="BUY" ${chk(a.type, 'BUY')}> Comprar</label>
+  let side = a.type, asset = a.asset, fiat = a.fiat, priceType = a.priceType;
+  let methods = [...(a.methods || [])];
+  let step = 1;
+
+  const pairIds = [BOTCFG?.sellAdId, BOTCFG?.buyAdId].filter(Boolean);
+  const inBotPair = isEdit && pairIds.includes(a.id);
+  const botOn = !!(BOTCFG?.enabled && inBotPair);
+  const mref = BOTLAST?.market || null; // referencia del mercado (última ejecución del bot)
+  const chk = (c) => (c ? 'checked' : '');
+
+  const box = $('#modalBox');
+  box.onclick = null;
+  box.classList.add('lg', 'wiz');
+  box.innerHTML = `
+    <div class="wiz-head">
+      <h3>${isEdit ? 'Editar anuncio' : 'Publicar un nuevo anuncio'}</h3>
+      ${isEdit ? `<span class="mono muted" style="font-size:.72rem">#${a.id}</span>` : ''}
+    </div>
+    <div class="wiz-steps">
+      <button type="button" class="wstep active" data-ws="1"><i>1</i> Tipo y precio</button>
+      <button type="button" class="wstep" data-ws="2"><i>2</i> Cantidad y pago</button>
+      <button type="button" class="wstep" data-ws="3"><i>3</i> Condiciones y bot</button>
+    </div>
+
+    <div class="wiz-step" data-wstep="1">
+      <div class="side-tabs" id="wSide">
+        <button type="button" data-side="BUY" class="${side === 'BUY' ? 'active buy' : ''}">Quiero comprar</button>
+        <button type="button" data-side="SELL" class="${side === 'SELL' ? 'active sell' : ''}">Quiero vender</button>
       </div>
+      <div class="wiz-field">
+        <span class="wiz-lbl">Activo</span>
+        <div class="chip-row" id="wAsset">
+          ${AD_ASSETS.map((x) => `<button type="button" class="chip ${asset === x ? 'on' : ''}" data-a="${x}">${x}</button>`).join('')}
+        </div>
+      </div>
+      <div class="wiz-field">
+        <span class="wiz-lbl">Con la divisa</span>
+        <div class="chip-row" id="wFiat">
+          ${['COP', 'USD'].map((x) => `<button type="button" class="chip ${fiat === x ? 'on' : ''}" data-f="${x}">${x}</button>`).join('')}
+        </div>
+      </div>
+      <div class="wiz-field">
+        <span class="wiz-lbl">Tipo de precio</span>
+        <div class="pt-cards">
+          <button type="button" class="pt-card ${priceType === 'FIXED' ? 'on' : ''}" data-pt="FIXED">Fijo<span>tú defines el precio exacto</span></button>
+          <button type="button" class="pt-card ${priceType === 'FLOATING' ? 'on' : ''}" data-pt="FLOATING">Variable<span>% sobre el precio del mercado</span></button>
+        </div>
+      </div>
+      <div class="wiz-field" id="wFixedWrap" ${priceType === 'FIXED' ? '' : 'hidden'}>
+        <span class="wiz-lbl">Precio del anuncio</span>
+        <div class="num-stepper">
+          <button type="button" id="wPMinus">−</button>
+          <input type="number" id="wPrice" step="0.01" value="${a.price}">
+          <button type="button" id="wPPlus">+</button>
+          <span class="suffix" id="wPriceSuf">${fiat}</span>
+        </div>
+      </div>
+      <div class="wiz-field" id="wFloatWrap" ${priceType === 'FLOATING' ? '' : 'hidden'}>
+        <span class="wiz-lbl">Margen sobre el mercado</span>
+        <div class="num-stepper">
+          <button type="button" id="wMMinus">−</button>
+          <input type="number" id="wMargin" step="0.01" value="${a.floatMargin}">
+          <button type="button" id="wMPlus">+</button>
+          <span class="suffix">%</span>
+        </div>
+        <span class="sub" id="wFloatHint">93% = 7% por debajo del mercado · 105% = 5% por encima</span>
+      </div>
+      <div class="market-ref" id="wMref">${mref
+        ? `Mercado ahora — mejor venta <span class="mono red">$${fmt2(mref.bestSell)}</span> · mejor compra <span class="mono green">$${fmt2(mref.bestBuy)}</span>`
+        : 'La referencia del mercado aparece tras la primera ejecución del bot.'}</div>
+    </div>
+
+    <div class="wiz-step" data-wstep="2" hidden>
       <div class="form-2col">
-        <label>Activo <select id="afAsset" class="f-select">
-          ${['USDT', 'BTC', 'USDC', 'FDUSD', 'BNB', 'ETH', 'SOL'].map((x) => `<option ${a.asset === x ? 'selected' : ''}>${x}</option>`).join('')}
-        </select></label>
-        <label>Divisa <select id="afFiat" class="f-select">
-          <option ${a.fiat === 'COP' ? 'selected' : ''}>COP</option><option ${a.fiat === 'USD' ? 'selected' : ''}>USD</option>
-        </select></label>
-      </div>
-      <div class="radio-row">
-        <label><input type="radio" name="afPT" value="FIXED" ${chk(a.priceType, 'FIXED')}> Precio fijado</label>
-        <label><input type="radio" name="afPT" value="FLOATING" ${chk(a.priceType, 'FLOATING')}> Precio variable</label>
-      </div>
-      <div class="form-2col">
-        <label id="afPriceWrap">Precio (COP) <input type="number" id="afPrice" class="f-input" step="0.01" value="${a.price}"></label>
-        <label id="afMarginWrap">Margen de precio variable (%) <input type="number" id="afMargin" class="f-input" step="0.01" value="${a.floatMargin}"></label>
-        <label>Cantidad objetivo (${a.asset}) <input type="number" id="afAmount" class="f-input" step="0.01" value="${a.amount}"></label>
-        <label>Tiempo límite del pago <select id="afPayTime" class="f-select">
+        <label>Cantidad total (<span id="wAmountSuf">${asset}</span>) <input type="number" id="wAmount" class="f-input" step="0.01" value="${a.amount}"></label>
+        <label>Tiempo límite del pago <select id="wPayTime" class="f-select">
           ${[15, 30, 45, 60].map((t) => `<option value="${t}" ${a.payTime === t ? 'selected' : ''}>${t} minutos</option>`).join('')}
         </select></label>
-        <label>Límite de orden mínimo (COP) <input type="number" id="afMin" class="f-input" value="${a.minLimit}"></label>
-        <label>Límite de orden máximo (COP) <input type="number" id="afMax" class="f-input" value="${a.maxLimit}"></label>
-        <label class="full">Métodos de pago (separados por coma, máx. 5) <input id="afMethods" class="f-input" value="${escapeHtml(a.methods.join(', '))}"></label>
-        <label class="full">Términos y comentarios (opcional) <textarea id="afTerms" class="f-input" maxlength="1000">${escapeHtml(a.terms || '')}</textarea></label>
-        <label class="full">Mensaje automático de respuesta (opcional) <textarea id="afReply" class="f-input" maxlength="1000" placeholder="La contraparte lo recibirá al crear la orden">${escapeHtml(a.autoReply || '')}</textarea></label>
+        <label>Límite de orden mínimo (${a.fiat}) <input type="number" id="wMin" class="f-input" value="${a.minLimit}"></label>
+        <label>Límite de orden máximo (${a.fiat}) <input type="number" id="wMax" class="f-input" value="${a.maxLimit}"></label>
       </div>
-      <div class="radio-row">
-        <b style="font-size:.85rem">Estado:</b>
-        <label><input type="radio" name="afStatus" value="online" ${chk(a.status, 'online')}> En línea</label>
-        <label><input type="radio" name="afStatus" value="offline" ${chk(a.status, 'offline')}> Desactivado</label>
-        <label><input type="radio" name="afStatus" value="private" ${chk(a.status, 'private')}> Privado</label>
+      <div class="wiz-field">
+        <span class="wiz-lbl">Métodos de pago <span class="sub">(elige hasta 5)</span></span>
+        <div class="chip-row" id="wMethods"></div>
+        <div class="add-method">
+          <input id="wMethodOther" class="f-input" placeholder="Otro método de pago">
+          <button type="button" class="btn btn-outline btn-sm" id="wMethodAdd">Añadir</button>
+        </div>
       </div>
     </div>
+
+    <div class="wiz-step" data-wstep="3" hidden>
+      <div class="ledger-form">
+        <label>Términos y comentarios (opcional) <textarea id="wTerms" class="f-input" maxlength="1000">${escapeHtml(a.terms || '')}</textarea></label>
+        <label>Mensaje automático de respuesta (opcional) <textarea id="wReply" class="f-input" maxlength="1000" placeholder="La contraparte lo recibirá al crear la orden">${escapeHtml(a.autoReply || '')}</textarea></label>
+      </div>
+      <div class="wiz-field">
+        <span class="wiz-lbl">Condiciones para la contraparte</span>
+        <label class="wiz-check"><input type="checkbox" id="wKyc" ${chk(a.kycRequired)}> Exigir verificación adicional (KYC)</label>
+        <label class="wiz-inline">Días mínimos desde el registro <input type="number" id="wRegDays" class="f-input" min="0" value="${a.regDays || 0}"></label>
+      </div>
+      <div class="wiz-field">
+        <span class="wiz-lbl">Estado del anuncio</span>
+        <div class="radio-row">
+          <label><input type="radio" name="wStatus" value="online" ${chk(a.status === 'online')}> En línea</label>
+          <label><input type="radio" name="wStatus" value="offline" ${chk(a.status === 'offline')}> Desconectado</label>
+          <label><input type="radio" name="wStatus" value="private" ${chk(a.status === 'private')}> Privado</label>
+        </div>
+      </div>
+      <div class="wiz-bot">
+        <div class="ctl-row" style="border:none;padding:0">
+          <b>🤖 Precio gestionado por el bot</b>
+          <label class="switch"><input type="checkbox" id="wBotOn" ${chk(botOn)}><i></i></label>
+        </div>
+        <p class="sub" style="margin:.2rem 0 .6rem">Conecta este anuncio con el del lado contrario: el bot compite con el mercado cada 5 minutos y <b>nunca rompe el margen</b> entre tu compra y tu venta.</p>
+        <div id="wBotFields" ${botOn ? '' : 'hidden'}>
+          <div class="form-2col">
+            <label class="full">Anuncio conectado (lado contrario) <select id="wBotPair" class="f-select"></select>
+              <span class="sub" id="wBotPairEmpty" hidden>No tienes un anuncio de ${side === 'SELL' ? 'compra' : 'venta'} de ${asset}/${fiat}: créalo primero.</span>
+            </label>
+            <label>Margen compra ↔ venta (%) <input type="number" id="wBotMargin" class="f-input" step="0.1" min="0" value="${BOTCFG?.marginPct ?? 0.7}"></label>
+            <label>Paso para competir (${fiat}) <input type="number" id="wBotStep" class="f-input" step="0.5" min="0.01" value="${BOTCFG?.stepCop ?? 1}"></label>
+            <label>Tope: precio mínimo de venta <input type="number" id="wBotMin" class="f-input" placeholder="opcional" value="${BOTCFG?.minSell ?? ''}"></label>
+            <label>Tope: precio máximo de compra <input type="number" id="wBotMax" class="f-input" placeholder="opcional" value="${BOTCFG?.maxBuy ?? ''}"></label>
+            <label class="full">Si el mercado comprime el margen, manda
+              <select id="wBotAnchor" class="f-select">
+                <option value="sell" ${BOTCFG?.anchor !== 'buy' ? 'selected' : ''}>La VENTA (se recalcula la compra)</option>
+                <option value="buy" ${BOTCFG?.anchor === 'buy' ? 'selected' : ''}>La COMPRA (se recalcula la venta)</option>
+              </select>
+            </label>
+          </div>
+          <div class="bot-last" id="wBotLast" style="margin-top:.7rem">${BOTLAST && inBotPair
+            ? `Última ejecución ${fdate(BOTLAST.at)} — venta <span class="mono red">$${fmt2(BOTLAST.sell)}</span> · compra <span class="mono green">$${fmt2(BOTLAST.buy)}</span> · margen real <span class="mono">${String(BOTLAST.marginReal).replace('.', ',')}%</span>`
+            : 'Aún no se ha ejecutado con este anuncio.'}</div>
+          <p class="sub" style="margin-top:.5rem">Al activar el bot, el precio pasa a ser <b>fijo</b> y lo mueve el bot en ambos anuncios.</p>
+        </div>
+      </div>
+    </div>
+
     <div class="modal-actions">
-      <button type="button" class="btn btn-outline" data-r="no">Cancelar</button>
-      <button type="button" class="btn btn-primary" data-r="ok">${existing?.id ? 'Guardar cambios' : 'Publicar'}</button>
-    </div>`);
+      <button type="button" class="btn btn-outline" id="wCancel">Cancelar</button>
+      <button type="button" class="btn btn-outline" id="wPrev" hidden>‹ Atrás</button>
+      <button type="button" class="btn btn-primary" id="wNext">Siguiente ›</button>
+      <button type="button" class="btn btn-primary" id="wSave" hidden>${isEdit ? 'Guardar cambios' : 'Publicar anuncio'}</button>
+    </div>`;
+  $('#modalBack').hidden = false;
 
-  $('#modalBox').classList.add('lg');
-  // Mostrar precio fijo o margen según el tipo elegido
-  const syncPT = () => {
-    const pt = document.querySelector('input[name="afPT"]:checked')?.value || 'FIXED';
-    $('#afPriceWrap').style.opacity = pt === 'FIXED' ? 1 : 0.45;
-    $('#afMarginWrap').style.opacity = pt === 'FLOATING' ? 1 : 0.45;
-  };
-  document.querySelectorAll('input[name="afPT"]').forEach((r) => r.addEventListener('change', syncPT));
-  syncPT();
+  const q = (s) => box.querySelector(s);
+  const qa = (s) => [...box.querySelectorAll(s)];
+  const close = () => { $('#modalBack').hidden = true; box.classList.remove('lg', 'wiz'); };
 
-  const ok = await p;
-  $('#modalBox').classList.remove('lg');
-  if (!ok) return;
-
-  const ad = {
-    id: existing?.id || undefined,
-    type: document.querySelector('input[name="afType"]:checked').value,
-    asset: $('#afAsset').value,
-    fiat: $('#afFiat').value,
-    priceType: document.querySelector('input[name="afPT"]:checked').value,
-    price: Number($('#afPrice').value),
-    floatMargin: Number($('#afMargin').value),
-    amount: Number($('#afAmount').value),
-    minLimit: Number($('#afMin').value),
-    maxLimit: Number($('#afMax').value),
-    methods: $('#afMethods').value,
-    payTime: Number($('#afPayTime').value),
-    terms: $('#afTerms').value,
-    autoReply: $('#afReply').value,
-    status: document.querySelector('input[name="afStatus"]:checked').value,
-  };
-  try {
-    const r = await api('/api/ads', { method: 'POST', body: { action: 'save', ad } });
-    ADS = r.ads;
-    renderAds();
-    renderBotSelects();
-    toast(existing?.id ? 'Anuncio actualizado ✔' : 'Anuncio creado ✔');
-  } catch (e) {
-    toast(e.message, true);
+  // ---- navegación entre pasos ----
+  function showStep(n) {
+    step = n;
+    qa('.wiz-step').forEach((s) => (s.hidden = Number(s.dataset.wstep) !== n));
+    qa('.wstep').forEach((s) => {
+      s.classList.toggle('active', Number(s.dataset.ws) === n);
+      s.classList.toggle('done', Number(s.dataset.ws) < n);
+    });
+    q('#wPrev').hidden = n === 1;
+    q('#wNext').hidden = n === 3;
+    q('#wSave').hidden = n !== 3;
   }
+  qa('.wstep').forEach((s) => s.addEventListener('click', () => showStep(Number(s.dataset.ws))));
+  q('#wNext').addEventListener('click', () => showStep(Math.min(3, step + 1)));
+  q('#wPrev').addEventListener('click', () => showStep(Math.max(1, step - 1)));
+  q('#wCancel').addEventListener('click', close);
+
+  // ---- paso 1: lado, activo, divisa y precio ----
+  qa('#wSide button').forEach((b) =>
+    b.addEventListener('click', () => {
+      side = b.dataset.side;
+      qa('#wSide button').forEach((x) => x.className = x === b ? `active ${side === 'SELL' ? 'sell' : 'buy'}` : '');
+      renderPairOpts();
+      syncPrice();
+    })
+  );
+  qa('#wAsset .chip').forEach((c) =>
+    c.addEventListener('click', () => {
+      asset = c.dataset.a;
+      qa('#wAsset .chip').forEach((x) => x.classList.toggle('on', x === c));
+      q('#wAmountSuf').textContent = asset;
+      renderPairOpts();
+    })
+  );
+  qa('#wFiat .chip').forEach((c) =>
+    c.addEventListener('click', () => {
+      fiat = c.dataset.f;
+      qa('#wFiat .chip').forEach((x) => x.classList.toggle('on', x === c));
+      q('#wPriceSuf').textContent = fiat;
+      renderPairOpts();
+    })
+  );
+  qa('.pt-card').forEach((c) =>
+    c.addEventListener('click', () => {
+      priceType = c.dataset.pt;
+      qa('.pt-card').forEach((x) => x.classList.toggle('on', x === c));
+      syncPrice();
+    })
+  );
+  function syncPrice() {
+    q('#wFixedWrap').hidden = priceType !== 'FIXED';
+    q('#wFloatWrap').hidden = priceType !== 'FLOATING';
+    if (priceType === 'FLOATING' && mref) {
+      const ref = side === 'SELL' ? mref.bestSell : mref.bestBuy;
+      const est = (ref * (Number(q('#wMargin').value) || 100)) / 100;
+      q('#wFloatHint').textContent = `≈ $${fmt2(est)} ${fiat} con el mercado actual`;
+    }
+  }
+  const bump = (input, dir, stepV) => {
+    input.value = (Math.round((Number(input.value) + dir * stepV) * 100) / 100) || 0;
+    syncPrice();
+  };
+  q('#wPMinus').addEventListener('click', () => bump(q('#wPrice'), -1, 1));
+  q('#wPPlus').addEventListener('click', () => bump(q('#wPrice'), 1, 1));
+  q('#wMMinus').addEventListener('click', () => bump(q('#wMargin'), -1, 0.5));
+  q('#wMPlus').addEventListener('click', () => bump(q('#wMargin'), 1, 0.5));
+  q('#wMargin').addEventListener('input', syncPrice);
+
+  // ---- paso 2: métodos de pago (chips) ----
+  function renderMethodChips() {
+    const all = [...new Set([...PAY_METHODS, ...methods])];
+    q('#wMethods').innerHTML = all
+      .map((m) => `<button type="button" class="chip ${methods.includes(m) ? 'on' : ''}" data-m="${escapeHtml(m)}">${escapeHtml(m)}</button>`)
+      .join('');
+    qa('#wMethods .chip').forEach((c) =>
+      c.addEventListener('click', () => {
+        const m = c.dataset.m;
+        if (methods.includes(m)) methods = methods.filter((x) => x !== m);
+        else if (methods.length >= 5) return toast('Máximo 5 métodos de pago', true);
+        else methods.push(m);
+        renderMethodChips();
+      })
+    );
+  }
+  renderMethodChips();
+  q('#wMethodAdd').addEventListener('click', () => {
+    const m = q('#wMethodOther').value.trim();
+    if (!m) return;
+    if (methods.length >= 5) return toast('Máximo 5 métodos de pago', true);
+    if (!methods.includes(m)) methods.push(m);
+    q('#wMethodOther').value = '';
+    renderMethodChips();
+  });
+
+  // ---- paso 3: bot dentro del anuncio ----
+  function renderPairOpts() {
+    const ct = side === 'SELL' ? 'BUY' : 'SELL';
+    const opts = ADS.filter((x) => x.type === ct && x.asset === asset && x.fiat === fiat && x.id !== a.id);
+    const prev = q('#wBotPair').value;
+    const cur = prev || (inBotPair ? (side === 'SELL' ? BOTCFG.buyAdId : BOTCFG.sellAdId) : (opts.find((o) => o.botManaged)?.id || ''));
+    q('#wBotPair').innerHTML =
+      '<option value="">— seleccionar —</option>' +
+      opts.map((o) => `<option value="${o.id}" ${o.id === cur ? 'selected' : ''}>${o.type === 'SELL' ? 'Venta' : 'Compra'} ${o.pair} · $${fmt2(o.price)}</option>`).join('');
+    q('#wBotPairEmpty').hidden = opts.length > 0;
+  }
+  renderPairOpts();
+  q('#wBotOn').addEventListener('change', () => {
+    q('#wBotFields').hidden = !q('#wBotOn').checked;
+  });
+
+  // ---- guardar ----
+  q('#wSave').addEventListener('click', async () => {
+    const price = Number(q('#wPrice').value) || 0;
+    const minL = Number(q('#wMin').value) || 0;
+    const maxL = Number(q('#wMax').value) || 0;
+    if (priceType === 'FIXED' && price <= 0) { showStep(1); return toast('Ingresa el precio del anuncio', true); }
+    if (!methods.length) { showStep(2); return toast('Elige al menos un método de pago', true); }
+    if (maxL && minL && maxL < minL) { showStep(2); return toast('El límite máximo no puede ser menor que el mínimo', true); }
+    const botWanted = q('#wBotOn').checked;
+    const counterId = q('#wBotPair').value;
+    if (botWanted && !counterId) return toast('Elige el anuncio del lado contrario para conectar el bot', true);
+
+    const ad = {
+      id: a.id || undefined,
+      type: side, asset, fiat,
+      priceType: botWanted ? 'FIXED' : priceType,
+      price,
+      floatMargin: Number(q('#wMargin').value) || 100,
+      amount: Number(q('#wAmount').value) || 0,
+      minLimit: minL, maxLimit: maxL,
+      methods,
+      payTime: Number(q('#wPayTime').value) || 15,
+      terms: q('#wTerms').value,
+      autoReply: q('#wReply').value,
+      kycRequired: q('#wKyc').checked,
+      regDays: Number(q('#wRegDays').value) || 0,
+      status: box.querySelector('input[name="wStatus"]:checked')?.value || 'offline',
+    };
+    try {
+      const r = await api('/api/ads', { method: 'POST', body: { action: 'save', ad } });
+      ADS = r.ads;
+      const savedId = ad.id || r.ads[0].id;
+      if (botWanted) {
+        const cfg = {
+          enabled: true, asset, fiat,
+          sellAdId: side === 'SELL' ? savedId : counterId,
+          buyAdId: side === 'BUY' ? savedId : counterId,
+          marginPct: Number(q('#wBotMargin').value) || 0.7,
+          stepCop: Number(q('#wBotStep').value) || 1,
+          minSell: q('#wBotMin').value ? Number(q('#wBotMin').value) : null,
+          maxBuy: q('#wBotMax').value ? Number(q('#wBotMax').value) : null,
+          anchor: q('#wBotAnchor').value,
+        };
+        await api('/api/pricebot', { method: 'POST', body: { cfg } });
+      } else if (botOn && inBotPair) {
+        await api('/api/pricebot', { method: 'POST', body: { cfg: { enabled: false } } });
+      }
+      await loadBot();
+      const r2 = await api('/api/ads'); // botManaged puede cambiar en el servidor
+      ADS = r2.ads;
+      renderAds();
+      close();
+      toast(isEdit ? 'Anuncio actualizado ✔' : 'Anuncio creado ✔');
+    } catch (e) {
+      toast(e.message, true);
+    }
+  });
 }
 
 function updateBulk() {
@@ -883,6 +1123,7 @@ $('#adReset').addEventListener('click', () => {
   renderAds();
 });
 $('#btnNewAd').addEventListener('click', () => adForm());
+$('#adResume').addEventListener('click', () => setBizPaused(false));
 
 async function bulkToggle(online) {
   const ids = [...document.querySelectorAll('.ad-check:checked')].map((c) => c.dataset.id);
@@ -897,95 +1138,45 @@ $('#adPublishAll').addEventListener('click', () => bulkToggle(true).catch((e) =>
 $('#adOffAll').addEventListener('click', () => bulkToggle(false).catch((e) => toast(e.message, true)));
 
 // ================== Bot de precios ==================
+// La configuración vive DENTRO de cada anuncio (✎ Editar → paso 3).
+// Aquí solo se muestra el estado y se puede ejecutar un tick manual.
 
 let BOTCFG = null;
+let BOTLAST = null;
 
-function renderBotSelects() {
-  const opts = (type) =>
-    '<option value="">— seleccionar —</option>' +
-    ADS.filter((a) => a.type === type)
-      .map((a) => `<option value="${a.id}" ${BOTCFG?.[type === 'SELL' ? 'sellAdId' : 'buyAdId'] === a.id ? 'selected' : ''}>${a.pair} · ${type === 'SELL' ? 'Vender' : 'Comprar'} · $${fmt2(a.price)} · #${a.id.slice(-6)}</option>`)
-      .join('');
-  $('#botSell').innerHTML = opts('SELL');
-  $('#botBuy').innerHTML = opts('BUY');
-}
-
-function renderBotLast(lastRun) {
-  if (!lastRun) { $('#botLast').textContent = 'Aún no se ha ejecutado.'; return; }
-  $('#botLast').innerHTML = `
-    <span>Hora: <span class="mono">${fdate(lastRun.at)}</span> · fuente del mercado: <span class="mono">${lastRun.market.source}</span></span>
-    <span>Mercado — mejor venta: <span class="mono red">$${fmt2(lastRun.market.bestSell)}</span> · mejor compra: <span class="mono green">$${fmt2(lastRun.market.bestBuy)}</span></span>
-    <span>Bot — tu venta: <span class="mono red">$${fmt2(lastRun.sell)}</span> · tu compra: <span class="mono green">$${fmt2(lastRun.buy)}</span> · margen real: <span class="mono">${String(lastRun.marginReal).replace('.', ',')}%</span></span>
-    ${(lastRun.notes || []).map((n) => `<span class="bot-note">${escapeHtml(n)}</span>`).join('')}`;
+function renderBotStrip() {
+  const on = !!BOTCFG?.enabled;
+  $('#botStatus').textContent = on ? '🤖 Bot de precios · activo (cada 5 min)' : '🤖 Bot de precios · inactivo';
+  $('#botStatus').className = 'conn-pill ' + (on ? 'on' : 'demo');
+  if (BOTLAST) {
+    $('#botMini').innerHTML =
+      `Última ejecución ${fdate(BOTLAST.at)} — venta <span class="mono red">$${fmt2(BOTLAST.sell)}</span> · ` +
+      `compra <span class="mono green">$${fmt2(BOTLAST.buy)}</span> · margen real <span class="mono">${String(BOTLAST.marginReal).replace('.', ',')}%</span>` +
+      (BOTLAST.notes || []).map((n) => ` · <span class="bot-note">${escapeHtml(n)}</span>`).join('');
+  } else {
+    $('#botMini').textContent = 'El bot se configura dentro de cada anuncio: ✎ Editar → paso 3 «Condiciones y bot».';
+  }
 }
 
 async function loadBot() {
   try {
     const r = await api('/api/pricebot');
     BOTCFG = r.cfg;
-    renderBotSelects();
-    $('#botMargin').value = BOTCFG.marginPct;
-    $('#botStep').value = BOTCFG.stepCop;
-    $('#botMinSell').value = BOTCFG.minSell ?? '';
-    $('#botMaxBuy').value = BOTCFG.maxBuy ?? '';
-    $('#botAnchor').value = BOTCFG.anchor;
-    $('#botEnabled').checked = BOTCFG.enabled;
-    $('#botStatus').textContent = BOTCFG.enabled ? '● activo · cada 5 min' : '○ inactivo';
-    $('#botStatus').className = 'conn-pill ' + (BOTCFG.enabled ? 'on' : 'demo');
-    renderBotLast(r.lastRun);
+    BOTLAST = r.lastRun;
+    renderBotStrip();
   } catch (e) {
     toast(e.message, true);
   }
 }
 
-async function saveBot(extra = {}) {
-  const cfg = {
-    sellAdId: $('#botSell').value || null,
-    buyAdId: $('#botBuy').value || null,
-    marginPct: Number($('#botMargin').value) || 0,
-    stepCop: Number($('#botStep').value) || 1,
-    minSell: $('#botMinSell').value ? Number($('#botMinSell').value) : null,
-    maxBuy: $('#botMaxBuy').value ? Number($('#botMaxBuy').value) : null,
-    anchor: $('#botAnchor').value,
-    enabled: $('#botEnabled').checked,
-    ...extra,
-  };
-  const r = await api('/api/pricebot', { method: 'POST', body: { cfg } });
-  BOTCFG = r.cfg;
-  $('#botStatus').textContent = BOTCFG.enabled ? '● activo · cada 5 min' : '○ inactivo';
-  $('#botStatus').className = 'conn-pill ' + (BOTCFG.enabled ? 'on' : 'demo');
-  return r;
-}
-
-$('#botSave').addEventListener('click', async () => {
-  try {
-    if ($('#botEnabled').checked && (!$('#botSell').value || !$('#botBuy').value))
-      return toast('Selecciona el anuncio de venta y el de compra antes de activar el bot', true);
-    await saveBot();
-    toast('Configuración del bot guardada ✔');
-  } catch (e) { toast(e.message, true); }
-});
-
-$('#botEnabled').addEventListener('change', async (e) => {
-  try {
-    if (e.target.checked && (!$('#botSell').value || !$('#botBuy').value)) {
-      e.target.checked = false;
-      return toast('Selecciona primero el anuncio de venta y el de compra', true);
-    }
-    await saveBot();
-    toast(e.target.checked ? 'Bot activado 🤖 — ajustará precios cada 5 minutos' : 'Bot desactivado');
-  } catch (err) { toast(err.message, true); }
-});
-
 $('#botRun').addEventListener('click', async () => {
   try {
-    await saveBot();
     const r = await api('/api/pricebot', { method: 'POST', body: { action: 'run' } });
-    renderBotLast(r.lastRun);
+    BOTLAST = r.lastRun;
     const ads = await api('/api/ads');
     ADS = ads.ads;
     renderAds();
-    renderBotSelects();
+    renderBotStrip();
     toast('Bot ejecutado ✔ — precios actualizados');
   } catch (e) { toast(e.message, true); }
 });

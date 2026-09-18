@@ -2,6 +2,7 @@
 // Configuración y ejecución manual del bot de precios.
 const { requireSession } = require('../lib/auth');
 const bot = require('../lib/pricebot');
+const adsLib = require('../lib/ads');
 
 module.exports = async (req, res) => {
   if (!requireSession(req, res)) return;
@@ -22,6 +23,16 @@ module.exports = async (req, res) => {
       st.cfg.marginPct = Math.max(0, Number(st.cfg.marginPct) || 0);
       st.cfg.stepCop = Math.max(0.01, Number(st.cfg.stepCop) || 1);
       await bot.saveState(st);
+      // La insignia BOT en la lista de anuncios refleja la pareja conectada
+      try {
+        const adsSt = await adsLib.getState();
+        let changed = false;
+        for (const ad of adsSt.ads) {
+          const member = ad.id === st.cfg.sellAdId || ad.id === st.cfg.buyAdId;
+          if (ad.botManaged !== member) { ad.botManaged = member; changed = true; }
+        }
+        if (changed) await adsLib.saveState(adsSt);
+      } catch { /* la insignia no bloquea el guardado */ }
       return res.status(200).json({ cfg: st.cfg, lastRun: st.lastRun || null });
     }
     res.status(405).json({ error: 'Método no permitido' });

@@ -688,3 +688,111 @@ textarea.f-input { resize: vertical; min-height: 70px; font-family: inherit; }
 /* Estados reales de Binance */
 .st-EN_APELACION { color: var(--red); background: rgba(246, 70, 93, .13); }
 .st-CANCELADA { color: var(--muted); background: rgba(138, 147, 184, .1); text-decoration: line-through; }
+
+/* ===== Editor de anuncio: asistente en 3 pasos (estilo Binance) ===== */
+.modal.wiz { width: min(780px, 100%); }
+.wiz-head { display: flex; align-items: baseline; gap: .7rem; margin-bottom: .9rem; }
+.wiz-head h3 { margin: 0; }
+
+.wiz-steps {
+  display: flex; gap: .4rem; margin-bottom: 1.2rem;
+  border-bottom: 1px solid var(--border); padding-bottom: .9rem;
+}
+.wstep {
+  display: flex; align-items: center; gap: .45rem;
+  font-size: .82rem; font-weight: 600; color: var(--muted);
+  padding: .35rem .7rem; border-radius: 999px;
+}
+.wstep i {
+  font-style: normal; font-family: var(--mono); font-size: .7rem;
+  width: 20px; height: 20px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); background: var(--bg);
+}
+.wstep.active { color: var(--text); background: rgba(76, 130, 247, .12); }
+.wstep.active i { border-color: var(--accent); background: var(--accent); color: #fff; }
+.wstep.done i { border-color: var(--green); color: var(--green); }
+
+.wiz-step { display: flex; flex-direction: column; gap: 1.1rem; }
+.wiz-field { display: flex; flex-direction: column; gap: .5rem; }
+.wiz-lbl { font-size: .84rem; font-weight: 600; }
+.wiz-lbl .sub { font-weight: 400; }
+
+.side-tabs { display: flex; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.side-tabs button {
+  flex: 1; padding: .6rem 1rem; font-size: .9rem; font-weight: 700;
+  color: var(--muted); background: var(--bg);
+}
+.side-tabs button.active.buy { background: rgba(14, 203, 129, .15); color: var(--green); }
+.side-tabs button.active.sell { background: rgba(246, 70, 93, .15); color: var(--red); }
+
+.chip-row { display: flex; flex-wrap: wrap; gap: .5rem; }
+.chip {
+  font-size: .82rem; font-weight: 600; padding: .38rem .8rem;
+  border: 1px solid var(--border); border-radius: 999px; color: var(--muted);
+  background: var(--bg);
+}
+.chip:hover { border-color: var(--accent); color: var(--text); }
+.chip.on { border-color: var(--accent); color: var(--accent-h); background: rgba(76, 130, 247, .12); }
+
+.pt-cards { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; }
+.pt-card {
+  display: flex; flex-direction: column; gap: .15rem; text-align: left;
+  padding: .7rem .9rem; border: 1px solid var(--border); border-radius: 10px;
+  background: var(--bg); font-size: .9rem; font-weight: 700;
+}
+.pt-card span { font-size: .76rem; font-weight: 400; color: var(--muted); }
+.pt-card.on { border-color: var(--accent); background: rgba(76, 130, 247, .1); }
+
+.num-stepper {
+  display: flex; align-items: center; gap: 0;
+  border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+  background: var(--bg); max-width: 340px;
+}
+.num-stepper button {
+  width: 42px; padding: .55rem 0; font-size: 1.05rem; color: var(--muted);
+  background: var(--card); flex: none;
+}
+.num-stepper button:hover { color: var(--text); background: var(--border); }
+.num-stepper input {
+  flex: 1; min-width: 0; border: none; background: transparent; color: var(--text);
+  font-family: var(--mono); font-size: .95rem; text-align: center; padding: .5rem .3rem;
+}
+.num-stepper input:focus { outline: none; }
+.num-stepper .suffix { padding: 0 .8rem; font-size: .8rem; color: var(--muted); font-family: var(--mono); }
+
+.market-ref {
+  font-size: .82rem; color: var(--muted);
+  border: 1px dashed var(--border); border-radius: 10px; padding: .6rem .9rem;
+}
+
+.add-method { display: flex; gap: .6rem; align-items: center; }
+.add-method .f-input { max-width: 260px; }
+
+.wiz-check { display: flex; gap: .5rem; align-items: center; font-size: .85rem; cursor: pointer; margin: 0 !important; }
+.wiz-inline { display: flex; gap: .6rem; align-items: center; font-size: .85rem; margin: 0 !important; }
+.wiz-inline .f-input { max-width: 120px; }
+
+.wiz-bot {
+  border: 1px solid rgba(76, 130, 247, .35); border-radius: var(--radius);
+  background: rgba(76, 130, 247, .06); padding: 1rem 1.1rem;
+}
+.wiz-bot .form-2col { margin-top: .3rem; }
+
+/* Franja de estado del bot (la configuración vive dentro de cada anuncio) */
+.bot-strip {
+  display: flex; align-items: center; gap: .9rem; flex-wrap: wrap;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--card); padding: .7rem 1rem;
+}
+.bot-strip .bot-mini { flex: 1; min-width: 220px; font-size: .82rem; color: var(--muted); }
+.bot-strip .bot-mini .mono { color: var(--text); }
+
+/* Banner de negocios en pausa */
+.pause-banner {
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  border: 1px solid rgba(227, 179, 65, .45); border-radius: var(--radius);
+  background: rgba(227, 179, 65, .08); color: var(--text);
+  padding: .75rem 1.1rem; font-size: .88rem;
+}
+.pause-banner span { flex: 1; min-width: 240px; }

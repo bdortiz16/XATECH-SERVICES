@@ -40,6 +40,8 @@ module.exports = async (req, res) => {
           payTime: Number(a.payTime) || 15,
           terms: (a.terms || '').slice(0, 1000),
           autoReply: (a.autoReply || '').slice(0, 1000),
+          kycRequired: !!a.kycRequired,
+          regDays: Math.max(0, Number(a.regDays) || 0),
           status: ['online', 'offline', 'private'].includes(a.status) ? a.status : 'offline',
           updated: new Date().toISOString(),
           updatedByUser: true,
