@@ -69,6 +69,7 @@ async function refresh() {
     if (cur) renderDetail(cur);
   }
   if (!document.querySelector('#viewOrden').hidden) renderOrden();
+  if (!document.querySelector('#viewChat').hidden) renderChat();
 }
 
 // ================== Agenda ==================
@@ -151,9 +152,12 @@ function renderStats() {
     <div class="stat c-blue"><strong>${ver}</strong><span>por verificar / liberar</span></div>
     <div class="stat c-green"><strong>${done}</strong><span>completadas</span></div>
     <div class="stat mono"><strong>$${fmt(vol)}</strong><span>volumen COP</span></div>`;
-  $('#chipPending').textContent = `${act} orden(es) pendiente(s)`;
+  $('#chipPending').innerHTML = `⏱ ${act} orden(es) pendiente(s)`;
   $('#kpiPend').textContent = act;
   $('#kpiHist').textContent = ORDERS.length;
+  const unread = ORDERS.reduce((s, o) => s + o.local.chat.filter((m) => m.from === 'them').length, 0);
+  $('#navChatBadge').textContent = unread > 99 ? '99+' : unread;
+  $('#navChatBadge').hidden = unread === 0;
 }
 
 function renderTable() {
@@ -453,7 +457,7 @@ $('#bannerClose').addEventListener('click', () => { $('#promoBanner').hidden = t
 
 // ================== Cambio de vistas (sidebar) ==================
 
-const VIEWS = { panel: '#viewPanel', orden: '#viewOrden', anuncio: '#viewAnuncio' };
+const VIEWS = { panel: '#viewPanel', orden: '#viewOrden', anuncio: '#viewAnuncio', chat: '#viewChat' };
 
 function showView(name) {
   Object.entries(VIEWS).forEach(([k, sel]) => { $(sel).hidden = k !== name; });
@@ -462,8 +466,18 @@ function showView(name) {
   );
   if (name === 'orden') renderOrden();
   if (name === 'anuncio') renderAds();
+  if (name === 'chat') renderChat();
   window.scrollTo({ top: 0 });
 }
+
+// Botón "Órdenes pendientes" del header → pestaña Pendiente de Mis órdenes
+$('#chipPending').addEventListener('click', () => {
+  OTAB = 'pendiente';
+  document.querySelectorAll('#ordenTabs button').forEach((b) =>
+    b.classList.toggle('active', b.dataset.otab === 'pendiente')
+  );
+  showView('orden');
+});
 
 document.querySelectorAll('.nav-item').forEach((b) =>
   b.addEventListener('click', () => {
@@ -715,6 +729,131 @@ $('#adOffAll').addEventListener('click', () => {
   ADS.forEach((a) => (a.online = false));
   renderAds(); toast('Anuncios desconectados');
 });
+
+// ================== Vista: Chat (Mensaje P2P) ==================
+
+let CTAB = 'todos';
+let CHAT_SEL = null;
+
+const lastMsg = (o) => o.local.chat[o.local.chat.length - 1] || null;
+const unreadOf = (o) => o.local.chat.filter((m) => m.from === 'them').length;
+
+function chatDate(iso) {
+  const d = new Date(iso);
+  const today = new Date().toDateString() === d.toDateString();
+  return today
+    ? d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', hour12: false })
+    : `${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function renderChat() {
+  const q = ($('#convSearch').value || '').toLowerCase();
+  let convs = ORDERS.filter((o) =>
+    CTAB === 'curso' ? !['COMPLETADA', 'FACTURADA'].includes(o.stage) : true
+  );
+  if (q) convs = convs.filter((o) => o.counterparty.nickname.toLowerCase().includes(q) || o.orderNumber.includes(q));
+  // Las conversaciones con mensajes más recientes primero
+  convs.sort((a, b) => {
+    const ma = lastMsg(a)?.at || a.createdAt;
+    const mb = lastMsg(b)?.at || b.createdAt;
+    return ma < mb ? 1 : -1;
+  });
+
+  $('#convList').innerHTML = convs.length
+    ? convs
+        .map((o) => {
+          const m = lastMsg(o);
+          const unread = unreadOf(o);
+          const prev = m ? (m.from === 'me' ? 'Tú: ' : '') + m.text.split('\n')[0] : 'Sin mensajes aún';
+          return `
+        <button class="conv-item ${o.orderNumber === CHAT_SEL ? 'sel' : ''}" data-conv="${o.orderNumber}">
+          <span class="avatar">${o.counterparty.nickname[0].toUpperCase()}${unread ? `<span class="unread">${unread > 9 ? '9+' : unread}</span>` : ''}</span>
+          <span class="conv-main">
+            <span class="conv-top"><strong>${o.counterparty.nickname}</strong><time>${chatDate(m?.at || o.createdAt)}</time></span>
+            <span class="conv-prev">${escapeHtml(prev)}</span>
+          </span>
+        </button>`;
+        })
+        .join('')
+    : '<p class="empty">No hay conversaciones</p>';
+
+  document.querySelectorAll('[data-conv]').forEach((b) =>
+    b.addEventListener('click', () => {
+      CHAT_SEL = b.dataset.conv;
+      renderChat();
+    })
+  );
+
+  if (CHAT_SEL) {
+    const o = ORDERS.find((x) => x.orderNumber === CHAT_SEL);
+    if (o) renderThread(o);
+  }
+}
+
+function renderThread(o) {
+  const L = o.local;
+  $('#threadPanel').innerHTML = `
+    <div class="thread-head">
+      <div class="thread-who">
+        <span class="avatar">${o.counterparty.nickname[0].toUpperCase()}</span>
+        <div>
+          <strong>${o.counterparty.nickname}${o.counterparty.isNew ? '<span class="badge-new">NUEVO</span>' : ''}</strong>
+          <span class="sub">#${o.orderNumber}</span>
+        </div>
+      </div>
+      <div class="thread-order">
+        <span class="side ${o.tradeType}">${o.tradeType === 'SELL' ? 'VENTA' : 'COMPRA'}</span>
+        <span class="mono">${o.amount} ${o.asset} · $${fmt(o.totalPrice)} ${o.fiat}</span>
+        <span class="pill st-${o.stage}">${STAGE_LABEL[o.stage]}</span>
+        <button class="btn btn-outline btn-sm" id="threadManage">Gestionar orden</button>
+      </div>
+    </div>
+    <div class="thread-msgs" id="threadMsgs">
+      ${L.chat.length === 0 ? '<span class="msg system">sin mensajes aún</span>' : ''}
+      ${L.chat
+        .map(
+          (m) =>
+            `<div class="msg ${m.from === 'me' ? 'me' : m.from === 'system' ? 'system' : 'them'}">${escapeHtml(m.text)}${
+              m.from !== 'system' ? `<span class="t">${new Date(m.at).toLocaleTimeString('es-CO')}</span>` : ''
+            }</div>`
+        )
+        .join('')}
+    </div>
+    <form class="thread-input" id="threadForm">
+      <input id="threadText" placeholder="Escribir mensaje..." autocomplete="off">
+      <button type="submit" aria-label="Enviar">➤</button>
+    </form>`;
+
+  const msgs = $('#threadMsgs');
+  msgs.scrollTop = msgs.scrollHeight;
+
+  $('#threadManage').addEventListener('click', () => {
+    showView('panel');
+    selectOrder(o.orderNumber);
+  });
+
+  $('#threadForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = $('#threadText').value.trim();
+    if (!text) return;
+    $('#threadText').value = '';
+    try {
+      await api(`/api/orders/${o.orderNumber}/chat`, { method: 'POST', body: { text } });
+      await refresh();
+      renderChat();
+    } catch (err) {
+      toast(err.message, true);
+    }
+  });
+}
+
+$('#convTabs').addEventListener('click', (e) => {
+  if (!e.target.dataset.ctab) return;
+  CTAB = e.target.dataset.ctab;
+  document.querySelectorAll('#convTabs button').forEach((b) => b.classList.toggle('active', b === e.target));
+  renderChat();
+});
+$('#convSearch').addEventListener('input', renderChat);
 
 boot()
   .then(() => {

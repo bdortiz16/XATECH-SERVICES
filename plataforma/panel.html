@@ -31,7 +31,7 @@
     <nav class="nav">
       <button class="nav-item active" data-view="panel"><span class="ni">▦</span> Panel de usuario</button>
       <button class="nav-item" data-view="orden"><span class="ni">≡</span> Orden</button>
-      <button class="nav-item"><span class="ni">✉</span> Chat <span class="badge">99+</span></button>
+      <button class="nav-item" data-view="chat"><span class="ni">✉</span> Chat <span class="badge" id="navChatBadge">0</span></button>
       <button class="nav-item" data-view="anuncio"><span class="ni">▤</span> Anuncio</button>
       <button class="nav-item"><span class="ni">▧</span> Cuenta de fondos</button>
       <button class="nav-item"><span class="ni">◉</span> Perfil</button>
@@ -46,9 +46,9 @@
 
     <header class="hdr">
       <div class="chips">
+        <button class="chip chip-btn" id="chipPending" title="Ver órdenes pendientes">⏱ 0 orden(es) pendiente(s)</button>
         <span class="chip">COP/USD <b class="mono">COL$ 3.164,01</b></span>
         <span class="chip">USDT <b class="mono">COL$ 4.170</b></span>
-        <span class="chip" id="chipPending">0 orden(es) pendiente(s)</span>
       </div>
       <div class="hdr-actions">
         <button class="btn btn-primary" id="btnPublish">Publicar anuncio</button>
@@ -306,6 +306,31 @@
         </div>
       </section>
     </div><!-- /viewAnuncio -->
+
+    <!-- ===== Vista: Chat (Mensaje P2P) ===== -->
+    <div id="viewChat" hidden>
+      <div class="chat-layout">
+        <aside class="card conv-panel">
+          <div class="conv-head">
+            <h2>Mensaje P2P</h2>
+            <div class="conv-icons"><span title="Mensajes">✉</span><span title="Destacados">👍</span><span title="Contactos">◉</span></div>
+          </div>
+          <div class="search-box conv-search"><span>⌕</span><input id="convSearch" placeholder="Buscar" autocomplete="off"></div>
+          <div class="conv-tabs" id="convTabs">
+            <button data-ctab="todos" class="active">Todos</button>
+            <button data-ctab="curso">Órdenes en curso</button>
+          </div>
+          <div class="conv-list" id="convList"></div>
+        </aside>
+
+        <section class="card thread-panel" id="threadPanel">
+          <div class="thread-empty">
+            <span class="thread-ico">💬</span>
+            <p>Te damos la bienvenida al chat de XATECH.<br>Selecciona un contacto para comenzar a chatear.</p>
+          </div>
+        </section>
+      </div>
+    </div><!-- /viewChat -->
 
     </main>
   </div>
