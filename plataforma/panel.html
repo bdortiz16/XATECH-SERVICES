@@ -34,6 +34,7 @@
       <button class="nav-item" data-view="chat"><span class="ni">✉</span> Chat <span class="badge" id="navChatBadge">0</span></button>
       <button class="nav-item" data-view="anuncio"><span class="ni">▤</span> Anuncio</button>
       <button class="nav-item" data-view="fondos"><span class="ni">▧</span> Cuenta de fondos</button>
+      <button class="nav-item" data-view="conta"><span class="ni">∑</span> Contabilidad</button>
       <button class="nav-item" data-view="perfil"><span class="ni">◉</span> Perfil</button>
       <button class="nav-item"><span class="ni">◎</span> Notificación <span class="badge">13</span></button>
     </nav>
@@ -495,6 +496,89 @@
 
       <p class="ref-note">Los saldos en vivo de USDT llegan de la API de Binance (billetera de fondos) al conectar las llaves; el saldo COP se concilia con la cuenta bancaria del recaudo Bre-B. En modo demo se calculan a partir de las órdenes sincronizadas.</p>
     </div><!-- /viewFondos -->
+
+    <!-- ===== Vista: Contabilidad ===== -->
+    <div id="viewConta" hidden>
+      <h1 class="page-title">Contabilidad</h1>
+
+      <div class="otabs" id="contaTabs">
+        <button data-cotab="clientes" class="active">Clientes</button>
+        <button data-cotab="utilidad">Utilidad diaria</button>
+      </div>
+
+      <!-- Clientes -->
+      <div id="cotab-clientes">
+        <div class="filters">
+          <div class="search-box"><span>⌕</span><input id="cliSearch" placeholder="Buscar por nombre, cédula, correo o llave" autocomplete="off"></div>
+          <button class="btn btn-primary btn-sm" id="btnAddCli">＋ Agregar cliente</button>
+        </div>
+        <section class="card">
+          <div class="table-wrap">
+            <table class="otable">
+              <thead>
+                <tr>
+                  <th>Nombre completo</th>
+                  <th>Cédula</th>
+                  <th>Correo</th>
+                  <th>Llave Bre-B</th>
+                  <th>Banco de la llave</th>
+                  <th>Origen<br><span class="th-sub">Registro</span></th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody id="cliBody"></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="cliEmpty" hidden>
+            <span class="empty-ico">◉</span>
+            <p>Aún no hay clientes registrados. El bot y el KYC los irán agregando aquí; también puedes registrarlos manualmente.</p>
+          </div>
+        </section>
+      </div>
+
+      <!-- Utilidad diaria -->
+      <div id="cotab-utilidad" hidden>
+        <div class="stats" id="utilStats"></div>
+
+        <div class="param-grid">
+          <section class="card">
+            <div class="card-head"><h2>Registrar el día</h2></div>
+            <div class="ledger-form">
+              <label>Fecha <input type="date" id="ldFecha" class="f-input"></label>
+              <label>Capital inicial (COP) <input type="number" id="ldInicial" class="f-input" placeholder="20.000.000" min="0"></label>
+              <label>Capital final (COP) <input type="number" id="ldFinal" class="f-input" placeholder="21.000.000" min="0"></label>
+              <label>Nota (opcional) <input type="text" id="ldNota" class="f-input" placeholder="Ej: día de alta demanda"></label>
+              <div class="ledger-preview mono" id="ldPreview">Utilidad: —</div>
+              <button class="btn btn-primary" id="btnSaveDay">Guardar día</button>
+            </div>
+          </section>
+
+          <section class="card">
+            <div class="card-head"><h2>¿Cómo se calcula?</h2></div>
+            <p class="how-p">Cuenta <b>todo el capital de la operación</b> al empezar y al terminar el día (COP en cuenta + el valor en pesos de tus USDT):</p>
+            <div class="highlight mono" style="margin:.6rem 0">Utilidad del día = Capital final − Capital inicial</div>
+            <p class="how-p">Ejemplo: inicias con <b class="mono">$20.000.000</b> y terminas con <b class="mono">$21.000.000</b> → utilidad de <b class="mono green">$1.000.000</b> (rendimiento del <b class="mono">5,0%</b>).</p>
+            <p class="how-p sub">El rendimiento es utilidad ÷ capital inicial × 100. La utilidad acumulada es la suma de todos los días.</p>
+          </section>
+        </div>
+
+        <section class="card">
+          <div class="card-head"><h2>Historial</h2></div>
+          <div class="table-wrap">
+            <table class="otable">
+              <thead>
+                <tr><th>Fecha</th><th>Capital inicial</th><th>Capital final</th><th>Utilidad</th><th>Rendimiento</th><th>Nota</th><th></th></tr>
+              </thead>
+              <tbody id="ldBody"></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="ldEmpty" hidden>
+            <span class="empty-ico">∑</span>
+            <p>Registra tu primer día para empezar a medir la utilidad.</p>
+          </div>
+        </section>
+      </div>
+    </div><!-- /viewConta -->
 
     </main>
   </div>

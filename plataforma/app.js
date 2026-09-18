@@ -458,7 +458,7 @@ $('#bannerClose').addEventListener('click', () => { $('#promoBanner').hidden = t
 
 // ================== Cambio de vistas (sidebar) ==================
 
-const VIEWS = { panel: '#viewPanel', orden: '#viewOrden', anuncio: '#viewAnuncio', chat: '#viewChat', perfil: '#viewPerfil', fondos: '#viewFondos' };
+const VIEWS = { panel: '#viewPanel', orden: '#viewOrden', anuncio: '#viewAnuncio', chat: '#viewChat', perfil: '#viewPerfil', fondos: '#viewFondos', conta: '#viewConta' };
 
 // ================== Ajustes de operación (pausas) ==================
 
@@ -511,6 +511,7 @@ function showView(name) {
   if (name === 'chat') renderChat();
   if (name === 'perfil') renderPerfil();
   if (name === 'fondos') renderFondos();
+  if (name === 'conta') loadConta();
   window.scrollTo({ top: 0 });
 }
 
@@ -937,6 +938,201 @@ function renderFondos() {
   $('#fundUsdtMode').textContent = ME.demo.binance ? '○ modo demo' : '● Binance';
   $('#fundUsdtMode').className = 'conn-pill ' + (ME.demo.binance ? 'demo' : 'on');
 }
+
+// ================== Vista: Contabilidad ==================
+
+let CLIENTS = [];
+let DAYS = [];
+
+async function loadConta() {
+  try {
+    const [c, l] = await Promise.all([api('/api/clients'), api('/api/ledger')]);
+    CLIENTS = c.clients;
+    DAYS = l.days;
+    renderClients();
+    renderLedger();
+  } catch (e) {
+    toast(e.message, true);
+  }
+}
+
+// ---- Clientes ----
+
+function renderClients() {
+  const q = ($('#cliSearch').value || '').toLowerCase();
+  const rows = CLIENTS.filter(
+    (c) =>
+      !q ||
+      [c.nombre, c.cedula, c.correo, c.llave, c.banco].some((v) => (v || '').toLowerCase().includes(q))
+  );
+  $('#cliEmpty').hidden = rows.length > 0;
+  $('#cliBody').innerHTML = rows
+    .map(
+      (c) => `
+    <tr>
+      <td><strong>${escapeHtml(c.nombre)}</strong></td>
+      <td class="mono">${escapeHtml(c.cedula || '—')}</td>
+      <td>${escapeHtml(c.correo || '—')}</td>
+      <td class="mono">${escapeHtml(c.llave || '—')}</td>
+      <td>${escapeHtml(c.banco || '—')}</td>
+      <td><div class="cell-stack"><span>${escapeHtml(c.origen || 'manual')}</span><span class="sub mono">${new Date(c.createdAt).toLocaleDateString('es-CO')}</span></div></td>
+      <td><div class="icon-btns">
+        <button title="Editar" data-cli-edit="${c.id}">✎</button>
+        <button title="Eliminar" data-cli-del="${c.id}">✕</button>
+      </div></td>
+    </tr>`
+    )
+    .join('');
+
+  document.querySelectorAll('[data-cli-edit]').forEach((b) =>
+    b.addEventListener('click', () => clientForm(CLIENTS.find((c) => c.id === b.dataset.cliEdit)))
+  );
+  document.querySelectorAll('[data-cli-del]').forEach((b) =>
+    b.addEventListener('click', async () => {
+      const c = CLIENTS.find((x) => x.id === b.dataset.cliDel);
+      const ok = await modal(`
+        <h3>Eliminar cliente</h3>
+        <p>¿Eliminar a <strong>${escapeHtml(c.nombre)}</strong> del registro?</p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" data-r="no">Cancelar</button>
+          <button type="button" class="btn btn-red" data-r="ok">Eliminar</button>
+        </div>`);
+      if (!ok) return;
+      const r = await api('/api/clients', { method: 'POST', body: { action: 'delete', id: c.id } });
+      CLIENTS = r.clients;
+      renderClients();
+      toast('Cliente eliminado');
+    })
+  );
+}
+
+async function clientForm(existing = null) {
+  const v = (x) => escapeHtml(existing?.[x] || '');
+  const ok = await modal(`
+    <h3>${existing ? 'Editar' : 'Agregar'} cliente</h3>
+    <div class="ledger-form">
+      <label>Nombre completo <input class="f-input" id="cfNombre" value="${v('nombre')}"></label>
+      <label>Cédula <input class="f-input" id="cfCedula" value="${v('cedula')}"></label>
+      <label>Correo <input class="f-input" id="cfCorreo" type="email" value="${v('correo')}"></label>
+      <label>Llave Bre-B <input class="f-input" id="cfLlave" value="${v('llave')}" placeholder="@llave, celular o correo"></label>
+      <label>Banco de la llave <input class="f-input" id="cfBanco" value="${v('banco')}" placeholder="Bancolombia, Nequi..."></label>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-outline" data-r="no">Cancelar</button>
+      <button type="button" class="btn btn-primary" data-r="ok">Guardar</button>
+    </div>`);
+  if (!ok) return;
+  const client = {
+    id: existing?.id,
+    nombre: $('#cfNombre').value,
+    cedula: $('#cfCedula').value,
+    correo: $('#cfCorreo').value,
+    llave: $('#cfLlave').value,
+    banco: $('#cfBanco').value,
+    origen: existing?.origen || 'manual',
+  };
+  try {
+    const r = await api('/api/clients', { method: 'POST', body: { client } });
+    CLIENTS = r.clients;
+    renderClients();
+    toast('Cliente guardado ✔');
+  } catch (e) {
+    toast(e.message, true);
+  }
+}
+
+$('#btnAddCli').addEventListener('click', () => clientForm());
+$('#cliSearch').addEventListener('input', renderClients);
+
+// ---- Utilidad diaria ----
+
+function utilPct(d) {
+  return d.inicial > 0 ? ((d.utilidad / d.inicial) * 100).toFixed(1).replace('.', ',') + '%' : '—';
+}
+
+function renderLedger() {
+  // Estadísticas: utilidad acumulada, capital actual, rendimiento promedio
+  const total = DAYS.reduce((s, d) => s + d.utilidad, 0);
+  const last = DAYS[0]; // ordenado desc por fecha
+  const avg = DAYS.length
+    ? DAYS.reduce((s, d) => s + (d.inicial > 0 ? d.utilidad / d.inicial : 0), 0) / DAYS.length * 100
+    : 0;
+  $('#utilStats').innerHTML = `
+    <div class="stat ${total >= 0 ? 'c-green' : ''}"><strong>${total < 0 ? '-' : ''}$${fmt(Math.abs(total))}</strong><span>utilidad acumulada</span></div>
+    <div class="stat mono"><strong>$${fmt(last ? last.final : 0)}</strong><span>capital actual (último cierre)</span></div>
+    <div class="stat c-blue"><strong>${avg.toFixed(1).replace('.', ',')}%</strong><span>rendimiento promedio diario</span></div>
+    <div class="stat"><strong>${DAYS.length}</strong><span>días registrados</span></div>`;
+
+  $('#ldEmpty').hidden = DAYS.length > 0;
+  $('#ldBody').innerHTML = DAYS.map(
+    (d) => `
+    <tr>
+      <td class="mono">${d.fecha}</td>
+      <td class="mono">$${fmt(d.inicial)}</td>
+      <td class="mono">$${fmt(d.final)}</td>
+      <td class="mono ${d.utilidad >= 0 ? 'util-pos' : 'util-neg'}">${d.utilidad >= 0 ? '+' : '-'}$${fmt(Math.abs(d.utilidad))}</td>
+      <td class="mono ${d.utilidad >= 0 ? 'util-pos' : 'util-neg'}">${utilPct(d)}</td>
+      <td>${escapeHtml(d.nota || '')}</td>
+      <td><button class="cli-del" data-ld-del="${d.id}" title="Eliminar registro">✕</button></td>
+    </tr>`
+  ).join('');
+
+  document.querySelectorAll('[data-ld-del]').forEach((b) =>
+    b.addEventListener('click', async () => {
+      const r = await api('/api/ledger', { method: 'POST', body: { action: 'delete', id: b.dataset.ldDel } });
+      DAYS = r.days;
+      renderLedger();
+    })
+  );
+
+  // Prellenar el formulario: fecha hoy y capital inicial = último cierre
+  if (!$('#ldFecha').value) $('#ldFecha').value = new Date().toISOString().slice(0, 10);
+  if (!$('#ldInicial').value && last) $('#ldInicial').value = last.final;
+  updateLedgerPreview();
+}
+
+function updateLedgerPreview() {
+  const i = Number($('#ldInicial').value);
+  const f = Number($('#ldFinal').value);
+  if (isFinite(i) && isFinite(f) && $('#ldInicial').value !== '' && $('#ldFinal').value !== '') {
+    const u = f - i;
+    const pct = i > 0 ? ((u / i) * 100).toFixed(1).replace('.', ',') : '—';
+    $('#ldPreview').innerHTML = `Utilidad: <span class="${u >= 0 ? 'util-pos' : 'util-neg'}">${u >= 0 ? '+' : '-'}$${fmt(Math.abs(u))} (${pct}%)</span>`;
+  } else {
+    $('#ldPreview').textContent = 'Utilidad: —';
+  }
+}
+
+['ldInicial', 'ldFinal'].forEach((id) => $('#' + id).addEventListener('input', updateLedgerPreview));
+
+$('#btnSaveDay').addEventListener('click', async () => {
+  const body = {
+    fecha: $('#ldFecha').value,
+    inicial: Number($('#ldInicial').value),
+    final: Number($('#ldFinal').value),
+    nota: $('#ldNota').value,
+  };
+  if (!body.fecha || $('#ldInicial').value === '' || $('#ldFinal').value === '')
+    return toast('Completa fecha, capital inicial y capital final', true);
+  try {
+    const r = await api('/api/ledger', { method: 'POST', body });
+    DAYS = r.days;
+    $('#ldFinal').value = '';
+    $('#ldNota').value = '';
+    $('#ldInicial').value = '';
+    renderLedger();
+    toast('Día registrado ✔');
+  } catch (e) {
+    toast(e.message, true);
+  }
+});
+
+$('#contaTabs').addEventListener('click', (e) => {
+  if (!e.target.dataset.cotab) return;
+  document.querySelectorAll('#contaTabs button').forEach((b) => b.classList.toggle('active', b === e.target));
+  $('#cotab-clientes').hidden = e.target.dataset.cotab !== 'clientes';
+  $('#cotab-utilidad').hidden = e.target.dataset.cotab !== 'utilidad';
+});
 
 // ================== Vista: Perfil ==================
 
