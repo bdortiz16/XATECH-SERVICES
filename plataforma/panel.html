@@ -29,10 +29,10 @@
     </div>
 
     <nav class="nav">
-      <button class="nav-item active"><span class="ni">▦</span> Panel de usuario</button>
-      <button class="nav-item"><span class="ni">≡</span> Orden</button>
+      <button class="nav-item active" data-view="panel"><span class="ni">▦</span> Panel de usuario</button>
+      <button class="nav-item" data-view="orden"><span class="ni">≡</span> Orden</button>
       <button class="nav-item"><span class="ni">✉</span> Chat <span class="badge">99+</span></button>
-      <button class="nav-item"><span class="ni">▤</span> Anuncio</button>
+      <button class="nav-item" data-view="anuncio"><span class="ni">▤</span> Anuncio</button>
       <button class="nav-item"><span class="ni">▥</span> Ofertas de anuncios</button>
       <button class="nav-item"><span class="ni">✦</span> Campañas <span class="tag-new">Nuevo</span></button>
       <button class="nav-item"><span class="ni">▧</span> Cuenta de fondos</button>
@@ -61,6 +61,8 @@
     </header>
 
     <main class="content">
+
+    <div id="viewPanel">
 
       <div class="banner" id="promoBanner">
         <div>
@@ -146,6 +148,168 @@
           <p>Selecciona una orden para gestionarla.</p>
         </div>
       </section>
+
+    </div><!-- /viewPanel -->
+
+    <!-- ===== Vista: Orden (Mis órdenes) ===== -->
+    <div id="viewOrden" hidden>
+      <h1 class="page-title">Mis órdenes</h1>
+
+      <div class="otabs" id="ordenTabs">
+        <button data-otab="pendiente" class="active">Pendiente</button>
+        <button data-otab="historial">Historial</button>
+        <button data-otab="apelar">Apelar</button>
+        <button data-otab="informe">Informe de pérdidas y ganancias</button>
+      </div>
+
+      <div class="filters" id="ordenFilters">
+        <select id="fAsset" class="f-select">
+          <option value="">Todos los activos</option>
+          <option>USDT</option><option>BTC</option><option>USDC</option><option>FDUSD</option>
+          <option>BNB</option><option>ETH</option><option>DOGE</option><option>ADA</option>
+        </select>
+        <select id="fType" class="f-select">
+          <option value="">Todos los tipos</option>
+          <option value="SELL">Venta</option>
+          <option value="BUY">Compra</option>
+        </select>
+        <select id="fState" class="f-select">
+          <option value="">Todos los estados</option>
+          <option value="PENDIENTE_PAGO">Pendiente de pago</option>
+          <option value="VERIFICAR_PAGO">Verificar pago</option>
+          <option value="LISTA_PARA_LIBERAR">Lista para liberar</option>
+          <option value="REQUIERE_KYC">Requiere KYC</option>
+          <option value="LISTA_PARA_PAGAR">Lista para pagar</option>
+          <option value="COMPLETADA">Completada</option>
+          <option value="FACTURADA">Facturada</option>
+        </select>
+        <select id="fFiat" class="f-select">
+          <option value="">Todas las divisas</option>
+          <option>COP</option><option>USD</option>
+        </select>
+        <div class="search-box">
+          <span>⌕</span>
+          <input id="fSearch" placeholder="Número de orden" autocomplete="off">
+          <button type="button" id="fPaste">Pegar</button>
+        </div>
+        <button class="btn btn-primary btn-sm" id="fApply">Filtrar</button>
+        <button class="btn btn-outline btn-sm" id="fClear">Borrar</button>
+      </div>
+
+      <div class="warn-banner">
+        <span>⚠</span>
+        En el portal se gestionan las órdenes sincronizadas con la API. Para comprobar todas las órdenes, visita la aplicación o el sitio web de Binance.
+      </div>
+
+      <section class="card" id="ordenTableCard">
+        <div class="table-wrap">
+          <table class="otable">
+            <thead>
+              <tr>
+                <th>Criptomoneda</th>
+                <th>Número de orden<br><span class="th-sub">Tipo · Fuente</span></th>
+                <th>Cantidad Fiat<br><span class="th-sub">Precio · Cantidad cripto</span></th>
+                <th>Nombre<br><span class="th-sub">Método de pago</span></th>
+                <th>Tiempo de emparejamiento</th>
+                <th>Estado</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="ordenBody"></tbody>
+          </table>
+        </div>
+        <div class="empty-state" id="ordenEmpty" hidden>
+          <span class="empty-ico">▤</span>
+          <p id="ordenEmptyMsg">No hay órdenes pendientes</p>
+        </div>
+      </section>
+
+      <section class="card" id="informeCard" hidden>
+        <div class="card-head"><h2>Informe de pérdidas y ganancias</h2><span class="mono muted" id="informeRange"></span></div>
+        <div class="stats" id="informeStats" style="margin-bottom:0"></div>
+        <p class="ref-note">Calculado sobre las órdenes sincronizadas en la plataforma.</p>
+      </section>
+    </div><!-- /viewOrden -->
+
+    <!-- ===== Vista: Anuncio (Mis anuncios) ===== -->
+    <div id="viewAnuncio" hidden>
+      <div class="page-head">
+        <h1 class="page-title">Mis anuncios</h1>
+        <div class="page-head-right">
+          <span class="rate-chip">Tasa Promedio de Intercambio <b class="mono">USD/COP 3.164,01</b></span>
+          <button class="btn btn-primary" id="btnNewAd">Publicar un nuevo anuncio</button>
+        </div>
+      </div>
+
+      <div class="otabs" id="adTabs">
+        <button data-adtab="activos" class="active">Activos</button>
+        <button data-adtab="cerrado">Cerrado</button>
+      </div>
+
+      <div class="subtabs" id="adSubtabs">
+        <button class="active">Anuncios normales</button>
+        <button>Anuncios de efectivo</button>
+        <button>Anuncios en bloque</button>
+        <button>Anuncios de fiat</button>
+        <button>Anuncios prémium</button>
+      </div>
+
+      <div class="filters">
+        <select id="adAsset" class="f-select">
+          <option value="">Cripto · Todo</option>
+          <option>USDT</option><option>SOL</option><option>BTC</option><option>USDC</option>
+        </select>
+        <select id="adFiat" class="f-select">
+          <option value="">Divisa · Todo</option>
+          <option>COP</option><option>USD</option>
+        </select>
+        <select id="adType" class="f-select">
+          <option value="">Tipo de orden · Todo</option>
+          <option value="SELL">Vender</option>
+          <option value="BUY">Comprar</option>
+        </select>
+        <select id="adState" class="f-select">
+          <option value="">Estado de la orden · Todo</option>
+          <option value="on">En línea</option>
+          <option value="off">Desconectado</option>
+        </select>
+        <div class="search-box">
+          <span>⌕</span>
+          <input id="adSearch" placeholder="Buscar n.º de anuncio" autocomplete="off">
+        </div>
+        <button class="btn btn-outline btn-sm" id="adReset">Restablecer</button>
+      </div>
+
+      <div class="bulk-row">
+        <label class="bulk-check"><input type="checkbox" id="adCheckAll"> <span id="adCheckCount">(0)</span></label>
+        <button class="btn btn-outline btn-sm" id="adPublishAll" disabled>Publicar todo</button>
+        <button class="btn btn-outline btn-sm" id="adOffAll" disabled>Desconectar todo</button>
+      </div>
+
+      <section class="card" id="adTableCard">
+        <div class="table-wrap">
+          <table class="otable">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Número de anuncio<br><span class="th-sub">Tipo · Par</span></th>
+                <th>Saldo del anuncio<br><span class="th-sub">Límite de orden</span></th>
+                <th>Precio del anuncio<br><span class="th-sub">Tipo de cambio</span></th>
+                <th>Método de pago</th>
+                <th>Última actualización<br><span class="th-sub">Fecha de creación</span></th>
+                <th>Estado</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="adBody"></tbody>
+          </table>
+        </div>
+        <div class="empty-state" id="adEmpty" hidden>
+          <span class="empty-ico">▤</span>
+          <p>No hay anuncios en esta pestaña</p>
+        </div>
+      </section>
+    </div><!-- /viewAnuncio -->
 
     </main>
   </div>

@@ -68,6 +68,7 @@ async function refresh() {
     const cur = ORDERS.find((o) => o.orderNumber === SELECTED);
     if (cur) renderDetail(cur);
   }
+  if (!document.querySelector('#viewOrden').hidden) renderOrden();
 }
 
 // ================== Agenda ==================
@@ -450,9 +451,275 @@ $('#btnOffer').addEventListener('click', () =>
 );
 $('#bannerClose').addEventListener('click', () => { $('#promoBanner').hidden = true; });
 
-document.querySelectorAll('.nav-item:not(.active)').forEach((b) =>
-  b.addEventListener('click', () => toast('Sección en desarrollo — por ahora todo se gestiona desde el Panel de usuario'))
+// ================== Cambio de vistas (sidebar) ==================
+
+const VIEWS = { panel: '#viewPanel', orden: '#viewOrden', anuncio: '#viewAnuncio' };
+
+function showView(name) {
+  Object.entries(VIEWS).forEach(([k, sel]) => { $(sel).hidden = k !== name; });
+  document.querySelectorAll('.nav-item').forEach((b) =>
+    b.classList.toggle('active', b.dataset.view === name)
+  );
+  if (name === 'orden') renderOrden();
+  if (name === 'anuncio') renderAds();
+  window.scrollTo({ top: 0 });
+}
+
+document.querySelectorAll('.nav-item').forEach((b) =>
+  b.addEventListener('click', () => {
+    if (b.dataset.view) showView(b.dataset.view);
+    else toast('Sección en desarrollo — disponible próximamente');
+  })
 );
 
-boot().catch((e) => toast(e.message, true));
+// ================== Vista: Mis órdenes ==================
+
+let OTAB = 'pendiente';
+
+const oFilters = () => ({
+  asset: $('#fAsset').value,
+  type: $('#fType').value,
+  state: $('#fState').value,
+  fiat: $('#fFiat').value,
+  q: $('#fSearch').value.trim(),
+});
+
+function renderOrden() {
+  const isInforme = OTAB === 'informe';
+  $('#ordenTableCard').hidden = isInforme;
+  $('#informeCard').hidden = !isInforme;
+  if (isInforme) return renderInforme();
+
+  const f = oFilters();
+  let rows = ORDERS.filter((o) => {
+    if (OTAB === 'pendiente') return !['COMPLETADA', 'FACTURADA'].includes(o.stage);
+    if (OTAB === 'historial') return ['COMPLETADA', 'FACTURADA'].includes(o.stage);
+    return false; // apelar: sin órdenes en apelación por ahora
+  });
+  rows = rows.filter(
+    (o) =>
+      (!f.asset || o.asset === f.asset) &&
+      (!f.type || o.tradeType === f.type) &&
+      (!f.state || o.stage === f.state) &&
+      (!f.fiat || o.fiat === f.fiat) &&
+      (!f.q || o.orderNumber.includes(f.q))
+  );
+
+  $('#ordenEmpty').hidden = rows.length > 0;
+  $('#ordenEmptyMsg').textContent =
+    OTAB === 'pendiente' ? 'No hay órdenes pendientes'
+    : OTAB === 'historial' ? 'No hay órdenes en el historial'
+    : 'No hay órdenes en apelación';
+
+  $('#ordenBody').innerHTML = rows
+    .map((o) => {
+      const d = new Date(o.createdAt);
+      const fecha = d.toLocaleDateString('es-CO') + ' ' + d.toLocaleTimeString('es-CO', { hour12: false });
+      const metodo = o.tradeType === 'SELL' ? 'Bre-B (llave)' : (o.payMethod?.type || '—');
+      return `
+      <tr>
+        <td class="asset-cell">${o.asset}</td>
+        <td><div class="cell-stack">
+          <button class="o-link" data-open="${o.orderNumber}">${o.orderNumber}</button>
+          <span class="side ${o.tradeType}" style="font-size:.78rem">${o.tradeType === 'SELL' ? 'Vender' : 'Comprar'}</span>
+          <span class="sub">Anuncio</span>
+        </div></td>
+        <td><div class="cell-stack">
+          <span class="mono"><strong>$${fmt(o.totalPrice)} ${o.fiat}</strong></span>
+          <span class="sub mono">$${fmt(o.price)}</span>
+          <span class="sub mono">${o.amount} ${o.asset}</span>
+        </div></td>
+        <td><div class="cell-stack">
+          <span>${o.counterparty.nickname}${o.counterparty.isNew ? '<span class="badge-new">NUEVO</span>' : ''}</span>
+          <span class="sub">${metodo}</span>
+        </div></td>
+        <td class="mono" style="font-size:.8rem">${fecha}</td>
+        <td><span class="pill st-${o.stage}">${STAGE_LABEL[o.stage]}</span></td>
+        <td><button class="btn btn-outline btn-sm" data-open="${o.orderNumber}">Gestionar</button></td>
+      </tr>`;
+    })
+    .join('');
+
+  document.querySelectorAll('#ordenBody [data-open]').forEach((el) =>
+    el.addEventListener('click', () => {
+      showView('panel');
+      selectOrder(el.dataset.open);
+    })
+  );
+}
+
+function renderInforme() {
+  const done = ORDERS.filter((o) => ['COMPLETADA', 'FACTURADA'].includes(o.stage));
+  const ventas = done.filter((o) => o.tradeType === 'SELL');
+  const compras = done.filter((o) => o.tradeType === 'BUY');
+  const sum = (a, k) => a.reduce((s, o) => s + o[k], 0);
+  $('#informeRange').textContent = new Date().toLocaleDateString('es-CO', { month: 'long', year: 'numeric' });
+  $('#informeStats').innerHTML = `
+    <div class="stat c-green"><strong>$${fmt(sum(ventas, 'totalPrice'))}</strong><span>vendido (COP) · ${ventas.length} órdenes</span></div>
+    <div class="stat"><strong>$${fmt(sum(compras, 'totalPrice'))}</strong><span>comprado (COP) · ${compras.length} órdenes</span></div>
+    <div class="stat mono"><strong>${fmt(sum(done, 'amount'))} USDT</strong><span>volumen cripto completado</span></div>
+    <div class="stat c-blue"><strong>${done.length}</strong><span>operaciones completadas</span></div>`;
+}
+
+$('#ordenTabs').addEventListener('click', (e) => {
+  if (!e.target.dataset.otab) return;
+  OTAB = e.target.dataset.otab;
+  document.querySelectorAll('#ordenTabs button').forEach((b) => b.classList.toggle('active', b === e.target));
+  renderOrden();
+});
+$('#fApply').addEventListener('click', renderOrden);
+$('#fClear').addEventListener('click', () => {
+  ['fAsset', 'fType', 'fState', 'fFiat'].forEach((id) => ($('#' + id).value = ''));
+  $('#fSearch').value = '';
+  renderOrden();
+});
+$('#fSearch').addEventListener('input', renderOrden);
+$('#fPaste').addEventListener('click', async () => {
+  try {
+    $('#fSearch').value = (await navigator.clipboard.readText()).trim();
+    renderOrden();
+  } catch {
+    toast('No se pudo leer el portapapeles — pega con Ctrl/Cmd+V', true);
+  }
+});
+
+// ================== Vista: Mis anuncios ==================
+
+// Anuncios de referencia (la API de anuncios llega con el perfil de comerciante).
+const ADS = [
+  {
+    id: '13825952134009303040', type: 'SELL', pair: 'USDT/COP', asset: 'USDT', fiat: 'COP',
+    balance: '0,44 USDT', limits: '3.000.000 ~ 70.000.000 COP',
+    price: '3.339,00 COP [0%]', rate: '--',
+    methods: ['Bancolombia S.A'],
+    updated: '2026-07-03 17:16:34', created: '2025-11-23 11:45:38',
+    online: false, closed: false,
+  },
+  {
+    id: '12825571264454512640', type: 'BUY', pair: 'SOL/COP', asset: 'SOL', fiat: 'COP',
+    balance: '200 SOL', limits: '1.000.000 ~ 80.000.000 COP',
+    price: '298.703,71 COP [-7,00%]', rate: '3.165,98 [0%]',
+    methods: ['Nequi', 'Bancolombia S.A'],
+    updated: '2026-02-02 22:23:04', created: '2025-11-22 10:32:11',
+    online: false, closed: false,
+  },
+];
+
+let ADTAB = 'activos';
+
+function adFiltersPass(a) {
+  const asset = $('#adAsset').value, fiat = $('#adFiat').value, type = $('#adType').value,
+    state = $('#adState').value, q = $('#adSearch').value.trim();
+  return (
+    (!asset || a.asset === asset) &&
+    (!fiat || a.fiat === fiat) &&
+    (!type || a.type === type) &&
+    (!state || (state === 'on') === a.online) &&
+    (!q || a.id.includes(q))
+  );
+}
+
+function renderAds() {
+  const rows = ADS.filter((a) => (ADTAB === 'activos' ? !a.closed : a.closed)).filter(adFiltersPass);
+  $('#adEmpty').hidden = rows.length > 0;
+  $('#adBody').innerHTML = rows
+    .map(
+      (a, i) => `
+    <tr>
+      <td><input type="checkbox" class="ad-check" data-i="${i}"></td>
+      <td><div class="cell-stack">
+        <button class="o-link">${a.id}</button>
+        <span class="side ${a.type}" style="font-size:.78rem">${a.type === 'SELL' ? 'Vender' : 'Comprar'}</span>
+        <span class="sub">${a.pair}</span>
+      </div></td>
+      <td><div class="cell-stack">
+        <span class="mono">${a.balance}</span>
+        <span class="sub mono">${a.limits}</span>
+      </div></td>
+      <td><div class="cell-stack">
+        <span class="mono">${a.price}</span>
+        <span class="sub mono">${a.rate}</span>
+      </div></td>
+      <td><div class="cell-stack">${a.methods.map((m) => `<span>${m}</span>`).join('')}</div></td>
+      <td><div class="cell-stack mono" style="font-size:.8rem">
+        <span>${a.updated}</span>
+        <span class="sub">${a.created}</span>
+      </div></td>
+      <td><div class="ad-state">
+        <span class="lbl">${a.online ? 'En línea' : 'Desconectado'}</span>
+        <label class="switch"><input type="checkbox" data-toggle="${a.id}" ${a.online ? 'checked' : ''}><i></i></label>
+      </div></td>
+      <td><div class="icon-btns">
+        <button title="Editar" data-ad-act="editar">✎</button>
+        <button title="Duplicar" data-ad-act="duplicar">⧉</button>
+        <button title="Cerrar" data-ad-act="cerrar">✕</button>
+      </div></td>
+    </tr>`
+    )
+    .join('');
+
+  document.querySelectorAll('[data-toggle]').forEach((sw) =>
+    sw.addEventListener('change', (e) => {
+      const ad = ADS.find((a) => a.id === e.target.dataset.toggle);
+      ad.online = e.target.checked;
+      renderAds();
+      toast(ad.online
+        ? 'Anuncio en línea ✔ (se sincronizará con Binance al conectar la API de comerciante)'
+        : 'Anuncio desconectado');
+    })
+  );
+  document.querySelectorAll('[data-ad-act]').forEach((b) =>
+    b.addEventListener('click', () => toast('Gestión de anuncios disponible al conectar la API de comerciante de Binance'))
+  );
+  document.querySelectorAll('.ad-check, #adCheckAll').forEach((c) =>
+    c.addEventListener('change', updateBulk)
+  );
+  updateBulk();
+}
+
+function updateBulk() {
+  const checks = [...document.querySelectorAll('.ad-check')];
+  if (document.activeElement === $('#adCheckAll')) checks.forEach((c) => (c.checked = $('#adCheckAll').checked));
+  const n = checks.filter((c) => c.checked).length;
+  $('#adCheckCount').textContent = `(${n})`;
+  $('#adPublishAll').disabled = n === 0;
+  $('#adOffAll').disabled = n === 0;
+}
+
+$('#adTabs').addEventListener('click', (e) => {
+  if (!e.target.dataset.adtab) return;
+  ADTAB = e.target.dataset.adtab;
+  document.querySelectorAll('#adTabs button').forEach((b) => b.classList.toggle('active', b === e.target));
+  renderAds();
+});
+$('#adSubtabs').addEventListener('click', (e) => {
+  if (e.target.tagName !== 'BUTTON') return;
+  document.querySelectorAll('#adSubtabs button').forEach((b) => b.classList.toggle('active', b === e.target));
+  if (!e.target.textContent.includes('normales')) toast('Por ahora solo hay anuncios normales');
+});
+['adAsset', 'adFiat', 'adType', 'adState'].forEach((id) => $('#' + id).addEventListener('change', renderAds));
+$('#adSearch').addEventListener('input', renderAds);
+$('#adReset').addEventListener('click', () => {
+  ['adAsset', 'adFiat', 'adType', 'adState'].forEach((id) => ($('#' + id).value = ''));
+  $('#adSearch').value = '';
+  renderAds();
+});
+$('#btnNewAd').addEventListener('click', () =>
+  toast('Publicar anuncios estará disponible al conectar la API de comerciante de Binance')
+);
+$('#adPublishAll').addEventListener('click', () => {
+  ADS.forEach((a) => { if (!a.closed) a.online = true; });
+  renderAds(); toast('Anuncios publicados ✔');
+});
+$('#adOffAll').addEventListener('click', () => {
+  ADS.forEach((a) => (a.online = false));
+  renderAds(); toast('Anuncios desconectados');
+});
+
+boot()
+  .then(() => {
+    const h = location.hash.replace('#', '');
+    if (VIEWS[h]) showView(h);
+  })
+  .catch((e) => toast(e.message, true));
 setInterval(refresh, 30000); // refresco automático cada 30 s
