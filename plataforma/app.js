@@ -1141,15 +1141,25 @@ $('#convSearch').addEventListener('input', renderChat);
 // ================== Vista: Cuenta de fondos ==================
 
 const USDT_RATE = 4170; // tasa de referencia COP/USDT (en real: precio del libro)
-const USDT_FREE_DEMO = 2847.53; // saldo demo; en real llega de la billetera de fondos de Binance
+const USDT_FREE_DEMO = 2847.53; // saldo demo cuando no hay llaves de Binance
 
-function renderFondos() {
+async function renderFondos() {
   const fmt2 = (n) => Number(n).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  // Saldo real de la billetera de Binance (si hay llaves); demo si no
+  let usdtFree = USDT_FREE_DEMO;
+  let usdtLockedBinance = 0;
+  try {
+    const b = await api('/api/balances');
+    if (!b.demo && b.usdt) {
+      usdtFree = b.usdt.free;
+      usdtLockedBinance = b.usdt.locked;
+    }
+  } catch {}
   // USDT comprometido en ventas activas (aún no liberadas)
-  const locked = ORDERS
+  const locked = usdtLockedBinance || ORDERS
     .filter((o) => o.tradeType === 'SELL' && !['COMPLETADA', 'FACTURADA'].includes(o.stage))
     .reduce((s, o) => s + o.amount, 0);
-  const usdtTotal = USDT_FREE_DEMO + locked;
+  const usdtTotal = usdtFree + locked;
 
   // COP según el estado de las órdenes
   const copVerified = ORDERS
