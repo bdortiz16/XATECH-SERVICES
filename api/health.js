@@ -13,6 +13,24 @@ module.exports = async (req, res) => {
   out.vercel_supabase_url = config.supabase.url ? 'configurada ✔' : 'FALTA (Vercel → SUPABASE_URL)';
   out.vercel_service_role = config.supabase.serviceKey ? 'configurada ✔' : 'FALTA (Vercel → SUPABASE_SERVICE_ROLE_KEY)';
 
+  // Detectar si la llave es realmente service_role o la anon (error común)
+  if (config.supabase.serviceKey) {
+    try {
+      const k = config.supabase.serviceKey;
+      if (k.startsWith('sb_secret_')) out.tipo_de_llave_supabase = 'secret ✔';
+      else if (k.startsWith('sb_publishable_')) out.tipo_de_llave_supabase = '❌ ES LA PUBLishABLE — usa una Secret key';
+      else {
+        const payload = JSON.parse(Buffer.from(k.split('.')[1], 'base64url').toString());
+        out.tipo_de_llave_supabase =
+          payload.role === 'service_role'
+            ? 'service_role ✔'
+            : `❌ ES LA "${payload.role}" — copia la service_role (secret) en Supabase → Settings → API`;
+      }
+    } catch {
+      out.tipo_de_llave_supabase = 'no se pudo identificar';
+    }
+  }
+
   // 2. ¿Se puede leer la tabla app_config de Supabase?
   if (config.supabase.url && config.supabase.serviceKey) {
     try {
