@@ -610,6 +610,23 @@ tbody tr:last-child td { border-bottom: none; }
 .cli-del { color: var(--muted); font-size: .8rem; }
 .cli-del:hover { color: var(--red); }
 
+/* ===== Bot de precios y editor de anuncios ===== */
+.bot-rules { list-style: none; display: grid; gap: .6rem; }
+.bot-rules li { font-size: .85rem; color: var(--muted); padding-left: 1.1rem; position: relative; }
+.bot-rules li::before { content: "→"; position: absolute; left: 0; color: var(--accent-h); font-family: var(--mono); }
+.bot-rules b { color: var(--text); }
+.bot-last { font-size: .85rem; color: var(--muted); display: grid; gap: .35rem; }
+.bot-last .mono { color: var(--text); }
+.bot-note { color: var(--amber); font-size: .8rem; }
+.modal.lg { width: min(720px, 100%); max-height: 90vh; overflow-y: auto; }
+.form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem 1rem; }
+.form-2col .full { grid-column: 1 / -1; }
+@media (max-width: 620px) { .form-2col { grid-template-columns: 1fr; } }
+.radio-row { display: flex; gap: 1.2rem; flex-wrap: wrap; font-size: .87rem; }
+.radio-row label { display: flex; gap: .4rem; align-items: center; margin: 0; cursor: pointer; }
+textarea.f-input { resize: vertical; min-height: 70px; font-family: inherit; }
+.bot-pill { font-family: var(--mono); font-size: .6rem; color: var(--accent-h); border: 1px solid rgba(76,130,247,.4); border-radius: 4px; padding: 0 .3rem; margin-left: .35rem; }
+
 /* ===== Modal / toast ===== */
 .modal-back {
   position: fixed; inset: 0; background: rgba(4, 6, 10, .72); backdrop-filter: blur(3px);

@@ -507,7 +507,7 @@ function showView(name) {
     b.classList.toggle('active', b.dataset.view === name)
   );
   if (name === 'orden') renderOrden();
-  if (name === 'anuncio') renderAds();
+  if (name === 'anuncio') loadAds();
   if (name === 'chat') renderChat();
   if (name === 'perfil') renderPerfil();
   if (name === 'fondos') renderFondos();
@@ -644,27 +644,19 @@ $('#fPaste').addEventListener('click', async () => {
 
 // ================== Vista: Mis anuncios ==================
 
-// Anuncios de referencia (la API de anuncios llega con el perfil de comerciante).
-const ADS = [
-  {
-    id: '13825952134009303040', type: 'SELL', pair: 'USDT/COP', asset: 'USDT', fiat: 'COP',
-    balance: '0,44 USDT', limits: '3.000.000 ~ 70.000.000 COP',
-    price: '3.339,00 COP [0%]', rate: '--',
-    methods: ['Bancolombia S.A'],
-    updated: '2026-07-03 17:16:34', created: '2025-11-23 11:45:38',
-    online: false, closed: false,
-  },
-  {
-    id: '12825571264454512640', type: 'BUY', pair: 'SOL/COP', asset: 'SOL', fiat: 'COP',
-    balance: '200 SOL', limits: '1.000.000 ~ 80.000.000 COP',
-    price: '298.703,71 COP [-7,00%]', rate: '3.165,98 [0%]',
-    methods: ['Nequi', 'Bancolombia S.A'],
-    updated: '2026-02-02 22:23:04', created: '2025-11-22 10:32:11',
-    online: false, closed: false,
-  },
-];
-
+let ADS = [];
 let ADTAB = 'activos';
+
+async function loadAds() {
+  try {
+    const r = await api('/api/ads');
+    ADS = r.ads;
+    renderAds();
+    await loadBot();
+  } catch (e) {
+    toast(e.message, true);
+  }
+}
 
 function adFiltersPass(a) {
   const asset = $('#adAsset').value, fiat = $('#adFiat').value, type = $('#adType').value,
@@ -673,68 +665,192 @@ function adFiltersPass(a) {
     (!asset || a.asset === asset) &&
     (!fiat || a.fiat === fiat) &&
     (!type || a.type === type) &&
-    (!state || (state === 'on') === a.online) &&
+    (!state || (state === 'on') === (a.status === 'online')) &&
     (!q || a.id.includes(q))
   );
 }
 
+const fdate = (iso) => {
+  const d = new Date(iso);
+  return `${d.toLocaleDateString('es-CO')} ${d.toLocaleTimeString('es-CO', { hour12: false })}`;
+};
+const fmt2 = (n) => Number(n).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 function renderAds() {
-  const rows = ADS.filter((a) => (ADTAB === 'activos' ? !a.closed : a.closed)).filter(adFiltersPass);
+  const rows = ADS.filter((a) => (ADTAB === 'activos' ? a.status !== 'private' : a.status === 'private')).filter(adFiltersPass);
   $('#adEmpty').hidden = rows.length > 0;
   const paused = SETTINGS.bizPaused;
   $('#adBody').innerHTML = rows
     .map(
-      (a, i) => `
+      (a) => `
     <tr>
-      <td><input type="checkbox" class="ad-check" data-i="${i}"></td>
+      <td><input type="checkbox" class="ad-check" data-id="${a.id}"></td>
       <td><div class="cell-stack">
-        <button class="o-link">${a.id}</button>
-        <span class="side ${a.type}" style="font-size:.78rem">${a.type === 'SELL' ? 'Vender' : 'Comprar'}</span>
+        <button class="o-link" data-ad-edit="${a.id}">${a.id}</button>
+        <span class="side ${a.type}" style="font-size:.78rem">${a.type === 'SELL' ? 'Vender' : 'Comprar'}${a.botManaged ? '<span class="bot-pill">BOT</span>' : ''}</span>
         <span class="sub">${a.pair}</span>
       </div></td>
       <td><div class="cell-stack">
-        <span class="mono">${a.balance}</span>
-        <span class="sub mono">${a.limits}</span>
+        <span class="mono">${fmt(a.amount)} ${a.asset}</span>
+        <span class="sub mono">${fmt(a.minLimit)} ~ ${fmt(a.maxLimit)} ${a.fiat}</span>
       </div></td>
       <td><div class="cell-stack">
-        <span class="mono">${a.price}</span>
-        <span class="sub mono">${a.rate}</span>
+        <span class="mono">${fmt2(a.price)} ${a.fiat}</span>
+        <span class="sub mono">${a.priceType === 'FIXED' ? 'precio fijo' : `variable ${a.floatMargin}%`}</span>
       </div></td>
-      <td><div class="cell-stack">${a.methods.map((m) => `<span>${m}</span>`).join('')}</div></td>
+      <td><div class="cell-stack">${a.methods.map((m) => `<span>${escapeHtml(m)}</span>`).join('')}</div></td>
       <td><div class="cell-stack mono" style="font-size:.8rem">
-        <span>${a.updated}</span>
-        <span class="sub">${a.created}</span>
+        <span>${fdate(a.updated)}</span>
+        <span class="sub">${fdate(a.created)}</span>
       </div></td>
       <td><div class="ad-state">
-        <span class="lbl">${paused ? 'En pausa ⏸' : a.online ? 'En línea' : 'Desconectado'}</span>
-        <label class="switch"><input type="checkbox" data-toggle="${a.id}" ${a.online ? 'checked' : ''} ${paused ? 'disabled' : ''}><i></i></label>
+        <span class="lbl">${paused ? 'En pausa ⏸' : a.status === 'online' ? 'En línea' : a.status === 'private' ? 'Privado' : 'Desconectado'}</span>
+        <label class="switch"><input type="checkbox" data-toggle="${a.id}" ${a.status === 'online' ? 'checked' : ''} ${paused ? 'disabled' : ''}><i></i></label>
       </div></td>
       <td><div class="icon-btns">
-        <button title="Editar" data-ad-act="editar">✎</button>
-        <button title="Duplicar" data-ad-act="duplicar">⧉</button>
-        <button title="Cerrar" data-ad-act="cerrar">✕</button>
+        <button title="Editar" data-ad-edit="${a.id}">✎</button>
+        <button title="Duplicar" data-ad-dup="${a.id}">⧉</button>
+        <button title="Eliminar" data-ad-del="${a.id}">✕</button>
       </div></td>
     </tr>`
     )
     .join('');
 
   document.querySelectorAll('[data-toggle]').forEach((sw) =>
-    sw.addEventListener('change', (e) => {
-      const ad = ADS.find((a) => a.id === e.target.dataset.toggle);
-      ad.online = e.target.checked;
-      renderAds();
-      toast(ad.online
-        ? 'Anuncio en línea ✔ (se sincronizará con Binance al conectar la API de comerciante)'
-        : 'Anuncio desconectado');
+    sw.addEventListener('change', async (e) => {
+      try {
+        const r = await api('/api/ads', { method: 'POST', body: { action: 'toggle', id: e.target.dataset.toggle, online: e.target.checked } });
+        ADS = r.ads;
+        renderAds();
+        toast(e.target.checked ? 'Anuncio en línea ✔' : 'Anuncio desconectado');
+      } catch (err) { toast(err.message, true); }
     })
   );
-  document.querySelectorAll('[data-ad-act]').forEach((b) =>
-    b.addEventListener('click', () => toast('Gestión de anuncios disponible al conectar la API de comerciante de Binance'))
+  document.querySelectorAll('[data-ad-edit]').forEach((b) =>
+    b.addEventListener('click', () => adForm(ADS.find((a) => a.id === b.dataset.adEdit)))
+  );
+  document.querySelectorAll('[data-ad-dup]').forEach((b) =>
+    b.addEventListener('click', () => {
+      const a = ADS.find((x) => x.id === b.dataset.adDup);
+      adForm({ ...a, id: null, status: 'offline' });
+    })
+  );
+  document.querySelectorAll('[data-ad-del]').forEach((b) =>
+    b.addEventListener('click', async () => {
+      const a = ADS.find((x) => x.id === b.dataset.adDel);
+      const ok = await modal(`
+        <h3>Eliminar anuncio</h3>
+        <p>¿Eliminar el anuncio <span class="mono">${a.id}</span> (${a.type === 'SELL' ? 'Vender' : 'Comprar'} ${a.pair})?</p>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" data-r="no">Cancelar</button>
+          <button type="button" class="btn btn-red" data-r="ok">Eliminar</button>
+        </div>`);
+      if (!ok) return;
+      const r = await api('/api/ads', { method: 'POST', body: { action: 'delete', id: a.id } });
+      ADS = r.ads;
+      renderAds();
+      toast('Anuncio eliminado');
+    })
   );
   document.querySelectorAll('.ad-check, #adCheckAll').forEach((c) =>
     c.addEventListener('change', updateBulk)
   );
   updateBulk();
+}
+
+// ---- Editor de anuncio (como el formulario de Binance) ----
+
+async function adForm(existing = null) {
+  const a = existing || {
+    type: 'SELL', asset: 'USDT', fiat: 'COP', priceType: 'FIXED', price: 4170,
+    floatMargin: 100, amount: 0, minLimit: 100000, maxLimit: 5000000,
+    methods: ['Bre-B (llave)'], payTime: 15, terms: '', autoReply: '', status: 'offline',
+  };
+  const chk = (v, x) => (v === x ? 'checked' : '');
+  const p = modal(`
+    <h3>${existing?.id ? 'Editar anuncio' : 'Publicar un nuevo anuncio'} ${existing?.id ? `<span class="mono muted" style="font-size:.75rem">#${existing.id}</span>` : ''}</h3>
+    <div class="ledger-form">
+      <div class="radio-row">
+        <label><input type="radio" name="afType" value="SELL" ${chk(a.type, 'SELL')}> Vender</label>
+        <label><input type="radio" name="afType" value="BUY" ${chk(a.type, 'BUY')}> Comprar</label>
+      </div>
+      <div class="form-2col">
+        <label>Activo <select id="afAsset" class="f-select">
+          ${['USDT', 'BTC', 'USDC', 'FDUSD', 'BNB', 'ETH', 'SOL'].map((x) => `<option ${a.asset === x ? 'selected' : ''}>${x}</option>`).join('')}
+        </select></label>
+        <label>Divisa <select id="afFiat" class="f-select">
+          <option ${a.fiat === 'COP' ? 'selected' : ''}>COP</option><option ${a.fiat === 'USD' ? 'selected' : ''}>USD</option>
+        </select></label>
+      </div>
+      <div class="radio-row">
+        <label><input type="radio" name="afPT" value="FIXED" ${chk(a.priceType, 'FIXED')}> Precio fijado</label>
+        <label><input type="radio" name="afPT" value="FLOATING" ${chk(a.priceType, 'FLOATING')}> Precio variable</label>
+      </div>
+      <div class="form-2col">
+        <label id="afPriceWrap">Precio (COP) <input type="number" id="afPrice" class="f-input" step="0.01" value="${a.price}"></label>
+        <label id="afMarginWrap">Margen de precio variable (%) <input type="number" id="afMargin" class="f-input" step="0.01" value="${a.floatMargin}"></label>
+        <label>Cantidad objetivo (${a.asset}) <input type="number" id="afAmount" class="f-input" step="0.01" value="${a.amount}"></label>
+        <label>Tiempo límite del pago <select id="afPayTime" class="f-select">
+          ${[15, 30, 45, 60].map((t) => `<option value="${t}" ${a.payTime === t ? 'selected' : ''}>${t} minutos</option>`).join('')}
+        </select></label>
+        <label>Límite de orden mínimo (COP) <input type="number" id="afMin" class="f-input" value="${a.minLimit}"></label>
+        <label>Límite de orden máximo (COP) <input type="number" id="afMax" class="f-input" value="${a.maxLimit}"></label>
+        <label class="full">Métodos de pago (separados por coma, máx. 5) <input id="afMethods" class="f-input" value="${escapeHtml(a.methods.join(', '))}"></label>
+        <label class="full">Términos y comentarios (opcional) <textarea id="afTerms" class="f-input" maxlength="1000">${escapeHtml(a.terms || '')}</textarea></label>
+        <label class="full">Mensaje automático de respuesta (opcional) <textarea id="afReply" class="f-input" maxlength="1000" placeholder="La contraparte lo recibirá al crear la orden">${escapeHtml(a.autoReply || '')}</textarea></label>
+      </div>
+      <div class="radio-row">
+        <b style="font-size:.85rem">Estado:</b>
+        <label><input type="radio" name="afStatus" value="online" ${chk(a.status, 'online')}> En línea</label>
+        <label><input type="radio" name="afStatus" value="offline" ${chk(a.status, 'offline')}> Desactivado</label>
+        <label><input type="radio" name="afStatus" value="private" ${chk(a.status, 'private')}> Privado</label>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-outline" data-r="no">Cancelar</button>
+      <button type="button" class="btn btn-primary" data-r="ok">${existing?.id ? 'Guardar cambios' : 'Publicar'}</button>
+    </div>`);
+
+  $('#modalBox').classList.add('lg');
+  // Mostrar precio fijo o margen según el tipo elegido
+  const syncPT = () => {
+    const pt = document.querySelector('input[name="afPT"]:checked')?.value || 'FIXED';
+    $('#afPriceWrap').style.opacity = pt === 'FIXED' ? 1 : 0.45;
+    $('#afMarginWrap').style.opacity = pt === 'FLOATING' ? 1 : 0.45;
+  };
+  document.querySelectorAll('input[name="afPT"]').forEach((r) => r.addEventListener('change', syncPT));
+  syncPT();
+
+  const ok = await p;
+  $('#modalBox').classList.remove('lg');
+  if (!ok) return;
+
+  const ad = {
+    id: existing?.id || undefined,
+    type: document.querySelector('input[name="afType"]:checked').value,
+    asset: $('#afAsset').value,
+    fiat: $('#afFiat').value,
+    priceType: document.querySelector('input[name="afPT"]:checked').value,
+    price: Number($('#afPrice').value),
+    floatMargin: Number($('#afMargin').value),
+    amount: Number($('#afAmount').value),
+    minLimit: Number($('#afMin').value),
+    maxLimit: Number($('#afMax').value),
+    methods: $('#afMethods').value,
+    payTime: Number($('#afPayTime').value),
+    terms: $('#afTerms').value,
+    autoReply: $('#afReply').value,
+    status: document.querySelector('input[name="afStatus"]:checked').value,
+  };
+  try {
+    const r = await api('/api/ads', { method: 'POST', body: { action: 'save', ad } });
+    ADS = r.ads;
+    renderAds();
+    renderBotSelects();
+    toast(existing?.id ? 'Anuncio actualizado ✔' : 'Anuncio creado ✔');
+  } catch (e) {
+    toast(e.message, true);
+  }
 }
 
 function updateBulk() {
@@ -764,16 +880,112 @@ $('#adReset').addEventListener('click', () => {
   $('#adSearch').value = '';
   renderAds();
 });
-$('#btnNewAd').addEventListener('click', () =>
-  toast('Publicar anuncios estará disponible al conectar la API de comerciante de Binance')
-);
-$('#adPublishAll').addEventListener('click', () => {
-  ADS.forEach((a) => { if (!a.closed) a.online = true; });
-  renderAds(); toast('Anuncios publicados ✔');
+$('#btnNewAd').addEventListener('click', () => adForm());
+
+async function bulkToggle(online) {
+  const ids = [...document.querySelectorAll('.ad-check:checked')].map((c) => c.dataset.id);
+  for (const id of ids) {
+    const r = await api('/api/ads', { method: 'POST', body: { action: 'toggle', id, online } });
+    ADS = r.ads;
+  }
+  renderAds();
+  toast(online ? 'Anuncios publicados ✔' : 'Anuncios desconectados');
+}
+$('#adPublishAll').addEventListener('click', () => bulkToggle(true).catch((e) => toast(e.message, true)));
+$('#adOffAll').addEventListener('click', () => bulkToggle(false).catch((e) => toast(e.message, true)));
+
+// ================== Bot de precios ==================
+
+let BOTCFG = null;
+
+function renderBotSelects() {
+  const opts = (type) =>
+    '<option value="">— seleccionar —</option>' +
+    ADS.filter((a) => a.type === type)
+      .map((a) => `<option value="${a.id}" ${BOTCFG?.[type === 'SELL' ? 'sellAdId' : 'buyAdId'] === a.id ? 'selected' : ''}>${a.pair} · ${type === 'SELL' ? 'Vender' : 'Comprar'} · $${fmt2(a.price)} · #${a.id.slice(-6)}</option>`)
+      .join('');
+  $('#botSell').innerHTML = opts('SELL');
+  $('#botBuy').innerHTML = opts('BUY');
+}
+
+function renderBotLast(lastRun) {
+  if (!lastRun) { $('#botLast').textContent = 'Aún no se ha ejecutado.'; return; }
+  $('#botLast').innerHTML = `
+    <span>Hora: <span class="mono">${fdate(lastRun.at)}</span> · fuente del mercado: <span class="mono">${lastRun.market.source}</span></span>
+    <span>Mercado — mejor venta: <span class="mono red">$${fmt2(lastRun.market.bestSell)}</span> · mejor compra: <span class="mono green">$${fmt2(lastRun.market.bestBuy)}</span></span>
+    <span>Bot — tu venta: <span class="mono red">$${fmt2(lastRun.sell)}</span> · tu compra: <span class="mono green">$${fmt2(lastRun.buy)}</span> · margen real: <span class="mono">${String(lastRun.marginReal).replace('.', ',')}%</span></span>
+    ${(lastRun.notes || []).map((n) => `<span class="bot-note">${escapeHtml(n)}</span>`).join('')}`;
+}
+
+async function loadBot() {
+  try {
+    const r = await api('/api/pricebot');
+    BOTCFG = r.cfg;
+    renderBotSelects();
+    $('#botMargin').value = BOTCFG.marginPct;
+    $('#botStep').value = BOTCFG.stepCop;
+    $('#botMinSell').value = BOTCFG.minSell ?? '';
+    $('#botMaxBuy').value = BOTCFG.maxBuy ?? '';
+    $('#botAnchor').value = BOTCFG.anchor;
+    $('#botEnabled').checked = BOTCFG.enabled;
+    $('#botStatus').textContent = BOTCFG.enabled ? '● activo · cada 5 min' : '○ inactivo';
+    $('#botStatus').className = 'conn-pill ' + (BOTCFG.enabled ? 'on' : 'demo');
+    renderBotLast(r.lastRun);
+  } catch (e) {
+    toast(e.message, true);
+  }
+}
+
+async function saveBot(extra = {}) {
+  const cfg = {
+    sellAdId: $('#botSell').value || null,
+    buyAdId: $('#botBuy').value || null,
+    marginPct: Number($('#botMargin').value) || 0,
+    stepCop: Number($('#botStep').value) || 1,
+    minSell: $('#botMinSell').value ? Number($('#botMinSell').value) : null,
+    maxBuy: $('#botMaxBuy').value ? Number($('#botMaxBuy').value) : null,
+    anchor: $('#botAnchor').value,
+    enabled: $('#botEnabled').checked,
+    ...extra,
+  };
+  const r = await api('/api/pricebot', { method: 'POST', body: { cfg } });
+  BOTCFG = r.cfg;
+  $('#botStatus').textContent = BOTCFG.enabled ? '● activo · cada 5 min' : '○ inactivo';
+  $('#botStatus').className = 'conn-pill ' + (BOTCFG.enabled ? 'on' : 'demo');
+  return r;
+}
+
+$('#botSave').addEventListener('click', async () => {
+  try {
+    if ($('#botEnabled').checked && (!$('#botSell').value || !$('#botBuy').value))
+      return toast('Selecciona el anuncio de venta y el de compra antes de activar el bot', true);
+    await saveBot();
+    toast('Configuración del bot guardada ✔');
+  } catch (e) { toast(e.message, true); }
 });
-$('#adOffAll').addEventListener('click', () => {
-  ADS.forEach((a) => (a.online = false));
-  renderAds(); toast('Anuncios desconectados');
+
+$('#botEnabled').addEventListener('change', async (e) => {
+  try {
+    if (e.target.checked && (!$('#botSell').value || !$('#botBuy').value)) {
+      e.target.checked = false;
+      return toast('Selecciona primero el anuncio de venta y el de compra', true);
+    }
+    await saveBot();
+    toast(e.target.checked ? 'Bot activado 🤖 — ajustará precios cada 5 minutos' : 'Bot desactivado');
+  } catch (err) { toast(err.message, true); }
+});
+
+$('#botRun').addEventListener('click', async () => {
+  try {
+    await saveBot();
+    const r = await api('/api/pricebot', { method: 'POST', body: { action: 'run' } });
+    renderBotLast(r.lastRun);
+    const ads = await api('/api/ads');
+    ADS = ads.ads;
+    renderAds();
+    renderBotSelects();
+    toast('Bot ejecutado ✔ — precios actualizados');
+  } catch (e) { toast(e.message, true); }
 });
 
 // ================== Vista: Chat (Mensaje P2P) ==================

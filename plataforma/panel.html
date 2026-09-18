@@ -307,6 +307,53 @@
           <p>No hay anuncios en esta pestaña</p>
         </div>
       </section>
+
+      <!-- Bot de precios -->
+      <section class="card" id="botCard">
+        <div class="card-head">
+          <h2>🤖 Bot de precios</h2>
+          <span class="conn-pill demo" id="botStatus">○ inactivo</span>
+        </div>
+        <div class="param-grid">
+          <div class="ledger-form">
+            <label>Anuncio de VENTA <select id="botSell" class="f-select"></select></label>
+            <label>Anuncio de COMPRA <select id="botBuy" class="f-select"></select></label>
+            <label>Margen entre compra y venta (%) <input type="number" id="botMargin" class="f-input" step="0.1" min="0" placeholder="0,7"></label>
+            <label>Paso para competir (COP) <input type="number" id="botStep" class="f-input" step="0.5" min="0.01" placeholder="1"></label>
+            <label>Precio mínimo de venta — tope (opcional) <input type="number" id="botMinSell" class="f-input" placeholder="Ej: 4100"></label>
+            <label>Precio máximo de compra — tope (opcional) <input type="number" id="botMaxBuy" class="f-input" placeholder="Ej: 4200"></label>
+            <label>Si el mercado comprime el margen, manda:
+              <select id="botAnchor" class="f-select">
+                <option value="sell">La VENTA (se recalcula la compra)</option>
+                <option value="buy">La COMPRA (se recalcula la venta)</option>
+              </select>
+            </label>
+            <div class="ctl-row" style="border:none;padding:.3rem 0">
+              <b>Bot activo — se ejecuta cada 5 minutos</b>
+              <label class="switch"><input type="checkbox" id="botEnabled"><i></i></label>
+            </div>
+            <div style="display:flex;gap:.7rem;flex-wrap:wrap">
+              <button class="btn btn-primary" id="botSave">Guardar configuración</button>
+              <button class="btn btn-outline" id="botRun">▶ Ejecutar ahora</button>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:1.2rem">
+            <div class="box">
+              <h3>Normas del bot</h3>
+              <ul class="bot-rules">
+                <li>La venta y la compra quedan <b>conectadas</b>: siempre se cumple <span class="mono">venta ≥ compra × (1 + margen)</span>.</li>
+                <li><b>Compite solo</b>: coloca la venta un paso por debajo del mejor vendedor del mercado y la compra un paso por encima del mejor comprador.</li>
+                <li>Si el mercado comprime el margen, <b>el margen manda</b>: se ancla el lado elegido y se recalcula el otro — nunca se rompe el margen por perseguir el mercado.</li>
+                <li><b>Topes de seguridad</b>: nunca vende por debajo del mínimo ni compra por encima del máximo configurados.</li>
+              </ul>
+            </div>
+            <div class="box">
+              <h3>Última ejecución</h3>
+              <div id="botLast" class="bot-last">Aún no se ha ejecutado.</div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div><!-- /viewAnuncio -->
 
     <!-- ===== Vista: Chat (Mensaje P2P) ===== -->
