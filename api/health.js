@@ -30,6 +30,24 @@ module.exports = async (req, res) => {
       } else {
         out.supabase = `error ${r.status}: ${(await r.text()).slice(0, 140)} — ¿corriste el SQL de la tabla app_config?`;
       }
+      // Vault (secretos cifrados) vía RPC get_app_secrets
+      const v = await fetch(`${config.supabase.url}/rest/v1/rpc/get_app_secrets`, {
+        method: 'POST',
+        headers: {
+          apikey: config.supabase.serviceKey,
+          Authorization: `Bearer ${config.supabase.serviceKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+        signal: AbortSignal.timeout(8000),
+      });
+      if (v.ok) {
+        const rows = await v.json();
+        out.vault = 'conectado ✔ (secretos cifrados)';
+        out.vault_secretos_encontrados = rows.map((x) => x.name).sort();
+      } else {
+        out.vault = `no disponible (${v.status}) — ¿corriste el SQL de get_app_secrets? (DEPLOY.md)`;
+      }
     } catch (e) {
       out.supabase = `sin conexión: ${e.message}`;
     }

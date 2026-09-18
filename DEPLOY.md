@@ -26,8 +26,42 @@ create table if not exists app_config (
 alter table app_config enable row level security;
 ```
 
-3. Ve a **Table Editor → app_config → Insert row** y agrega tus llaves como
-   filas `key` / `value` (solo las que tengas; el resto queda en modo demo):
+3. **Guardar las llaves — opción recomendada: VAULT (cifrado en reposo).**
+   Corre UNA VEZ este SQL (crea la función segura que el servidor usa para
+   leer los secretos del Vault; solo la service_role puede ejecutarla):
+
+```sql
+create or replace function public.get_app_secrets()
+returns table(name text, secret text)
+language sql
+security definer
+set search_path = ''
+as $$
+  select name, decrypted_secret from vault.decrypted_secrets;
+$$;
+
+revoke all on function public.get_app_secrets() from public, anon, authenticated;
+grant execute on function public.get_app_secrets() to service_role;
+```
+
+   Luego agrega los secretos en la interfaz del Vault:
+   **Project Settings → Vault → Add new secret** (o Integrations → Vault),
+   con estos nombres exactos:
+
+| Name | Secret |
+|---|---|
+| `BINANCE_API_KEY` | tu API Key de Binance |
+| `BINANCE_API_SECRET` | tu Secret Key de Binance |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | acceso a la plataforma |
+| `BREB_KEY` / `BREB_BANK` / `ACCOUNT_HOLDER` | recaudo Bre-B |
+| `SIIGO_*`, `DIDIT_*` | cuando las tengas |
+
+   ⚠️ Las "Edge Function Secrets" NO sirven aquí: solo las leen las Edge
+   Functions de Supabase y no hay API para leerlas desde Vercel.
+
+   **Alternativa simple (sin cifrado en reposo):** agrega tus llaves como
+   filas `key` / `value` en la tabla `app_config` (Table Editor). Si un
+   mismo nombre está en Vault y en la tabla, gana Vault:
 
 | key | value |
 |---|---|
