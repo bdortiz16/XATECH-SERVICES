@@ -1,5 +1,6 @@
 {
   "cleanUrls": true,
+  "regions": ["gru1"],
   "crons": [
     { "path": "/api/pricebot-tick", "schedule": "*/5 * * * *" }
   ]
