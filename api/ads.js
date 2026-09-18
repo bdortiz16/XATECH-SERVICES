@@ -18,8 +18,10 @@ module.exports = async (req, res) => {
         if (!ad) return res.status(404).json({ error: 'Anuncio no encontrado' });
         ad.status = b.online ? 'online' : 'offline';
         ad.updated = new Date().toISOString();
+        ad.updatedByUser = true;
       } else if (b.action === 'delete') {
         st.ads = st.ads.filter((a) => a.id !== b.id);
+        st.userEdited = true;
       } else if (b.action === 'save') {
         const a = b.ad || {};
         const clean = {
@@ -40,6 +42,7 @@ module.exports = async (req, res) => {
           autoReply: (a.autoReply || '').slice(0, 1000),
           status: ['online', 'offline', 'private'].includes(a.status) ? a.status : 'offline',
           updated: new Date().toISOString(),
+          updatedByUser: true,
         };
         clean.pair = `${clean.asset}/${clean.fiat}`;
         if (a.id) {
