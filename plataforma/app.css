@@ -684,3 +684,7 @@ textarea.f-input { resize: vertical; min-height: 70px; font-family: inherit; }
 .thread-input.sim input { background: transparent; color: var(--amber); }
 .thread-input.sim input::placeholder { color: rgba(227, 179, 65, .55); }
 .thread-input.sim button { background: rgba(227, 179, 65, .18); color: var(--amber); }
+
+/* Estados reales de Binance */
+.st-EN_APELACION { color: var(--red); background: rgba(246, 70, 93, .13); }
+.st-CANCELADA { color: var(--muted); background: rgba(138, 147, 184, .1); text-decoration: line-through; }

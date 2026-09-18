@@ -26,6 +26,8 @@ const STAGE_LABEL = {
   LISTA_PARA_PAGAR: 'Lista para pagar',
   COMPLETADA: 'Completada',
   FACTURADA: 'Facturada',
+  EN_APELACION: 'En apelación',
+  CANCELADA: 'Cancelada',
 };
 
 async function api(path, opts = {}) {
@@ -134,16 +136,16 @@ $('#assetTabs').addEventListener('click', (e) => {
 // ================== Stats y tabla ==================
 
 function inTab(o) {
-  const active = ['PENDIENTE_PAGO', 'REQUIERE_KYC', 'LISTA_PARA_PAGAR'];
+  const active = ['PENDIENTE_PAGO', 'REQUIERE_KYC', 'LISTA_PARA_PAGAR', 'EN_APELACION'];
   const verify = ['VERIFICAR_PAGO', 'LISTA_PARA_LIBERAR'];
   if (TAB === 'activas') return active.includes(o.stage);
   if (TAB === 'verificar') return verify.includes(o.stage);
-  if (TAB === 'completadas') return ['COMPLETADA', 'FACTURADA'].includes(o.stage);
+  if (TAB === 'completadas') return ['COMPLETADA', 'FACTURADA', 'CANCELADA'].includes(o.stage);
   return true;
 }
 
 function renderStats() {
-  const done = ORDERS.filter((o) => ['COMPLETADA', 'FACTURADA'].includes(o.stage)).length;
+  const done = ORDERS.filter((o) => ['COMPLETADA', 'FACTURADA', 'CANCELADA'].includes(o.stage)).length;
   const act = ORDERS.length - done;
   const ver = ORDERS.filter((o) => ['VERIFICAR_PAGO', 'LISTA_PARA_LIBERAR'].includes(o.stage)).length;
   const vol = ORDERS.reduce((s, o) => s + o.totalPrice, 0);
@@ -551,9 +553,9 @@ function renderOrden() {
 
   const f = oFilters();
   let rows = ORDERS.filter((o) => {
-    if (OTAB === 'pendiente') return !['COMPLETADA', 'FACTURADA'].includes(o.stage);
-    if (OTAB === 'historial') return ['COMPLETADA', 'FACTURADA'].includes(o.stage);
-    return false; // apelar: sin órdenes en apelación por ahora
+    if (OTAB === 'pendiente') return !['COMPLETADA', 'FACTURADA', 'CANCELADA', 'EN_APELACION'].includes(o.stage);
+    if (OTAB === 'historial') return ['COMPLETADA', 'FACTURADA', 'CANCELADA'].includes(o.stage);
+    return o.stage === 'EN_APELACION'; // pestaña Apelar
   });
   rows = rows.filter(
     (o) =>
