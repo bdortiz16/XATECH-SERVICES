@@ -11,8 +11,10 @@ const siigo = require('../../../lib/siigo');
 const kyc = require('../../../lib/kyc');
 const store = require('../../../lib/store');
 const { viewOrder, stageOf } = require('../../../lib/orders');
+const rc = require('../../../lib/runtime-config');
 
 module.exports = async (req, res) => {
+  await rc.apply();
   if (!requireSession(req, res)) return;
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido' });
 

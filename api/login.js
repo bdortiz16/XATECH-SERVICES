@@ -1,8 +1,10 @@
 'use strict';
 const config = require('../lib/config');
 const { passwordOk, sessionCookie } = require('../lib/auth');
+const rc = require('../lib/runtime-config');
 
-module.exports = (req, res) => {
+module.exports = async (req, res) => {
+  await rc.apply();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido' });
   const { email, password } = req.body || {};
   if (email?.toLowerCase() === config.adminEmail.toLowerCase() && passwordOk(password || '')) {
