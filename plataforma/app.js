@@ -343,6 +343,7 @@ function renderDetail(o) {
 // ================== Acciones ==================
 
 async function doAction(o, action, body = {}) {
+  if (apiPausedBlock()) return;
   try {
     await api(`/api/orders/${o.orderNumber}/${action}`, { method: 'POST', body });
     await refresh();
@@ -457,7 +458,48 @@ $('#bannerClose').addEventListener('click', () => { $('#promoBanner').hidden = t
 
 // ================== Cambio de vistas (sidebar) ==================
 
-const VIEWS = { panel: '#viewPanel', orden: '#viewOrden', anuncio: '#viewAnuncio', chat: '#viewChat' };
+const VIEWS = { panel: '#viewPanel', orden: '#viewOrden', anuncio: '#viewAnuncio', chat: '#viewChat', perfil: '#viewPerfil', fondos: '#viewFondos' };
+
+// ================== Ajustes de operación (pausas) ==================
+
+let SETTINGS = { bizPaused: false, apiPaused: false, auto: true };
+try { SETTINGS = { ...SETTINGS, ...JSON.parse(localStorage.getItem('xatech_settings') || '{}') }; } catch {}
+function saveSettings() {
+  try { localStorage.setItem('xatech_settings', JSON.stringify(SETTINGS)); } catch {}
+}
+
+function applyPauseUI() {
+  const btn = $('#btnPause');
+  btn.textContent = SETTINGS.bizPaused ? '▶ Reanudar negocios' : '⏸ Pausar negocios';
+  btn.classList.toggle('btn-pause-on', SETTINGS.bizPaused);
+  const flag = $('#pauseFlag');
+  if (flag) flag.hidden = !SETTINGS.bizPaused;
+  const swBiz = $('#swBiz'), swApi = $('#swApi'), swAuto = $('#swAuto');
+  if (swBiz) swBiz.checked = SETTINGS.bizPaused;
+  if (swApi) swApi.checked = SETTINGS.apiPaused;
+  if (swAuto) swAuto.checked = SETTINGS.auto;
+  $('#btnNewAd').disabled = SETTINGS.bizPaused;
+  $('#btnPublish').disabled = SETTINGS.bizPaused;
+}
+
+function setBizPaused(v) {
+  SETTINGS.bizPaused = v;
+  if (v) ADS.forEach((a) => (a.online = false)); // desconectar todos los anuncios
+  saveSettings();
+  applyPauseUI();
+  if (!document.querySelector('#viewAnuncio').hidden) renderAds();
+  toast(v
+    ? 'Negocios en pausa ⏸ — anuncios desconectados; solo se terminan las operaciones pendientes'
+    : 'Negocios reanudados ▶ — ya puedes volver a publicar anuncios');
+}
+
+const apiPausedBlock = () => {
+  if (SETTINGS.apiPaused) {
+    toast('API en pausa (solo lectura). Reactívala en Perfil → Configuración API', true);
+    return true;
+  }
+  return false;
+};
 
 function showView(name) {
   Object.entries(VIEWS).forEach(([k, sel]) => { $(sel).hidden = k !== name; });
@@ -467,6 +509,8 @@ function showView(name) {
   if (name === 'orden') renderOrden();
   if (name === 'anuncio') renderAds();
   if (name === 'chat') renderChat();
+  if (name === 'perfil') renderPerfil();
+  if (name === 'fondos') renderFondos();
   window.scrollTo({ top: 0 });
 }
 
@@ -636,6 +680,7 @@ function adFiltersPass(a) {
 function renderAds() {
   const rows = ADS.filter((a) => (ADTAB === 'activos' ? !a.closed : a.closed)).filter(adFiltersPass);
   $('#adEmpty').hidden = rows.length > 0;
+  const paused = SETTINGS.bizPaused;
   $('#adBody').innerHTML = rows
     .map(
       (a, i) => `
@@ -660,8 +705,8 @@ function renderAds() {
         <span class="sub">${a.created}</span>
       </div></td>
       <td><div class="ad-state">
-        <span class="lbl">${a.online ? 'En línea' : 'Desconectado'}</span>
-        <label class="switch"><input type="checkbox" data-toggle="${a.id}" ${a.online ? 'checked' : ''}><i></i></label>
+        <span class="lbl">${paused ? 'En pausa ⏸' : a.online ? 'En línea' : 'Desconectado'}</span>
+        <label class="switch"><input type="checkbox" data-toggle="${a.id}" ${a.online ? 'checked' : ''} ${paused ? 'disabled' : ''}><i></i></label>
       </div></td>
       <td><div class="icon-btns">
         <button title="Editar" data-ad-act="editar">✎</button>
@@ -696,7 +741,7 @@ function updateBulk() {
   if (document.activeElement === $('#adCheckAll')) checks.forEach((c) => (c.checked = $('#adCheckAll').checked));
   const n = checks.filter((c) => c.checked).length;
   $('#adCheckCount').textContent = `(${n})`;
-  $('#adPublishAll').disabled = n === 0;
+  $('#adPublishAll').disabled = n === 0 || SETTINGS.bizPaused;
   $('#adOffAll').disabled = n === 0;
 }
 
@@ -835,7 +880,7 @@ function renderThread(o) {
   $('#threadForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const text = $('#threadText').value.trim();
-    if (!text) return;
+    if (!text || apiPausedBlock()) return;
     $('#threadText').value = '';
     try {
       await api(`/api/orders/${o.orderNumber}/chat`, { method: 'POST', body: { text } });
@@ -855,10 +900,115 @@ $('#convTabs').addEventListener('click', (e) => {
 });
 $('#convSearch').addEventListener('input', renderChat);
 
+// ================== Vista: Cuenta de fondos ==================
+
+const USDT_RATE = 4170; // tasa de referencia COP/USDT (en real: precio del libro)
+const USDT_FREE_DEMO = 2847.53; // saldo demo; en real llega de la billetera de fondos de Binance
+
+function renderFondos() {
+  const fmt2 = (n) => Number(n).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  // USDT comprometido en ventas activas (aún no liberadas)
+  const locked = ORDERS
+    .filter((o) => o.tradeType === 'SELL' && !['COMPLETADA', 'FACTURADA'].includes(o.stage))
+    .reduce((s, o) => s + o.amount, 0);
+  const usdtTotal = USDT_FREE_DEMO + locked;
+
+  // COP según el estado de las órdenes
+  const copVerified = ORDERS
+    .filter((o) => o.tradeType === 'SELL' && (o.local.paymentVerified || ['COMPLETADA', 'FACTURADA'].includes(o.stage)))
+    .reduce((s, o) => s + o.totalPrice, 0);
+  const copPending = ORDERS
+    .filter((o) => o.tradeType === 'SELL' && o.stage === 'VERIFICAR_PAGO' && !o.local.paymentVerified)
+    .reduce((s, o) => s + o.totalPrice, 0);
+  const copPaid = ORDERS
+    .filter((o) => o.tradeType === 'BUY' && o.local.markedPaid)
+    .reduce((s, o) => s + o.totalPrice, 0);
+  const copTotal = copVerified - copPaid;
+
+  $('#usdtFree').textContent = fmt2(USDT_FREE_DEMO);
+  $('#usdtLocked').textContent = fmt2(locked);
+  $('#usdtTotal').textContent = fmt2(usdtTotal);
+  $('#usdtCop').textContent = `$${fmt(Math.round(usdtTotal * USDT_RATE))}`;
+  $('#copVerified').textContent = `$${fmt(copVerified)}`;
+  $('#copPending').textContent = `$${fmt(copPending)}`;
+  $('#copPaid').textContent = `$${fmt(copPaid)}`;
+  $('#copTotal').textContent = `$${fmt(copTotal)}`;
+  $('#fondosTotal').textContent = `COL$ ${fmt(Math.round(usdtTotal * USDT_RATE + copTotal))}`;
+  $('#fundUsdtMode').textContent = ME.demo.binance ? '○ modo demo' : '● Binance';
+  $('#fundUsdtMode').className = 'conn-pill ' + (ME.demo.binance ? 'demo' : 'on');
+}
+
+// ================== Vista: Perfil ==================
+
+function renderPerfil() {
+  const done = ORDERS.filter((o) => ['COMPLETADA', 'FACTURADA'].includes(o.stage));
+  const volUsdt = done.reduce((s, o) => s + o.amount, 0);
+  const volCop = done.reduce((s, o) => s + o.totalPrice, 0);
+  const rate = ORDERS.length ? Math.round((done.length / ORDERS.length) * 100) : 0;
+  const ctps = new Set(ORDERS.map((o) => o.counterparty.nickname)).size;
+
+  $('#reqVol').textContent = `${fmt(volUsdt)} USDT`;
+  $('#reqVolBar').style.width = Math.min(100, (volUsdt / 100000) * 100) + '%';
+  $('#reqVolBar').style.background = volUsdt >= 100000 ? 'var(--green)' : 'var(--red)';
+  $('#reqRate').textContent = `${rate}%`;
+  $('#reqRateBar').style.width = rate + '%';
+  $('#reqRateBar').style.background = rate >= 98 ? 'var(--green)' : 'var(--red)';
+  $('#pRate').textContent = `${rate}%`;
+  $('#pOps').textContent = done.length;
+  $('#pVol').textContent = `$${fmt(volCop)}`;
+  $('#pCtp').textContent = ctps;
+
+  // Método de pago
+  $('#payKey').textContent = ME.payment.breBKey;
+  $('#payBank').textContent = ME.payment.breBBank;
+  $('#payHolder').textContent = ME.payment.accountHolder;
+
+  // Estado de conexiones
+  const conns = [
+    ['Binance API', 'Órdenes P2P y liberación', !ME.demo.binance],
+    ['Supabase', 'Base de datos (chat, KYC, facturas)', !ME.demo.store],
+    ['Siigo', 'Facturación electrónica', !ME.demo.siigo],
+    ['Didit', 'Verificación KYC', !ME.demo.kyc],
+  ];
+  $('#connList').innerHTML = conns
+    .map(
+      ([name, sub, on]) => `
+    <div class="conn-row">
+      <div><b>${name}</b><span class="sub">${sub}</span></div>
+      <span class="conn-pill ${on ? 'on' : 'demo'}">${on ? '● conectada' : '○ modo demo'}</span>
+    </div>`
+    )
+    .join('');
+
+  applyPauseUI();
+}
+
+$('#perfilTabs').addEventListener('click', (e) => {
+  if (!e.target.dataset.ptab) return;
+  document.querySelectorAll('#perfilTabs button').forEach((b) => b.classList.toggle('active', b === e.target));
+  ['perfil', 'api', 'pago', 'bloqueados', 'seguridad', 'notif'].forEach(
+    (t) => ($('#ptab-' + t).hidden = t !== e.target.dataset.ptab)
+  );
+});
+
+$('#btnPause').addEventListener('click', () => setBizPaused(!SETTINGS.bizPaused));
+$('#swBiz').addEventListener('change', (e) => setBizPaused(e.target.checked));
+$('#swApi').addEventListener('change', (e) => {
+  SETTINGS.apiPaused = e.target.checked;
+  saveSettings();
+  toast(SETTINGS.apiPaused ? 'API en pausa — solo lectura' : 'API activa de nuevo ✔');
+});
+$('#swAuto').addEventListener('change', (e) => {
+  SETTINGS.auto = e.target.checked;
+  saveSettings();
+  toast(SETTINGS.auto ? 'Refresco automático activado' : 'Refresco automático desactivado');
+});
+
 boot()
   .then(() => {
+    applyPauseUI();
     const h = location.hash.replace('#', '');
     if (VIEWS[h]) showView(h);
   })
   .catch((e) => toast(e.message, true));
-setInterval(refresh, 30000); // refresco automático cada 30 s
+setInterval(() => { if (SETTINGS.auto) refresh(); }, 30000); // refresco automático cada 30 s

@@ -33,8 +33,8 @@
       <button class="nav-item" data-view="orden"><span class="ni">≡</span> Orden</button>
       <button class="nav-item" data-view="chat"><span class="ni">✉</span> Chat <span class="badge" id="navChatBadge">0</span></button>
       <button class="nav-item" data-view="anuncio"><span class="ni">▤</span> Anuncio</button>
-      <button class="nav-item"><span class="ni">▧</span> Cuenta de fondos</button>
-      <button class="nav-item"><span class="ni">◉</span> Perfil</button>
+      <button class="nav-item" data-view="fondos"><span class="ni">▧</span> Cuenta de fondos</button>
+      <button class="nav-item" data-view="perfil"><span class="ni">◉</span> Perfil</button>
       <button class="nav-item"><span class="ni">◎</span> Notificación <span class="badge">13</span></button>
     </nav>
 
@@ -52,6 +52,7 @@
       </div>
       <div class="hdr-actions">
         <button class="btn btn-primary" id="btnPublish">Publicar anuncio</button>
+        <button class="btn btn-outline" id="btnPause">⏸ Pausar negocios</button>
         <button class="btn btn-outline" id="btnLogout">Salir</button>
       </div>
     </header>
@@ -331,6 +332,169 @@
         </section>
       </div>
     </div><!-- /viewChat -->
+
+    <!-- ===== Vista: Perfil ===== -->
+    <div id="viewPerfil" hidden>
+      <h1 class="page-title">Perfil</h1>
+
+      <div class="otabs" id="perfilTabs">
+        <button data-ptab="perfil" class="active">Mi Perfil</button>
+        <button data-ptab="api">Configuración API</button>
+        <button data-ptab="pago">Método de pago</button>
+        <button data-ptab="bloqueados">Lista de bloqueados</button>
+        <button data-ptab="seguridad">Configuración de seguridad</button>
+        <button data-ptab="notif">Notificaciones</button>
+      </div>
+
+      <!-- Mi Perfil -->
+      <div id="ptab-perfil">
+        <section class="card profile-card">
+          <div class="profile-id">
+            <span class="avatar profile-avatar">X</span>
+            <div>
+              <div class="profile-name">XATECH_COP <span class="pro-badge">Pro</span> <button class="icon-edit" title="Editar nombre">✎</button></div>
+              <div class="profile-meta">
+                <div><span class="sub">Nivel de comerciante</span><b>🥉 Comerciante de bronce</b></div>
+                <div><span class="sub">Descuento de comisión</span><b>COP · Descuento del 20,00% ›</b></div>
+              </div>
+            </div>
+          </div>
+          <span class="pause-flag" id="pauseFlag" hidden>⏸ Negocios en pausa</span>
+        </section>
+
+        <h2 class="section-sub-title">Requisitos de mejora</h2>
+        <div class="req-grid">
+          <section class="card req-card">
+            <span class="req-ico">📈</span>
+            <span class="req-name">Volumen de trading</span>
+            <strong class="mono" id="reqVol">0,00 USDT</strong>
+            <div class="prog"><i id="reqVolBar" style="width:0%;background:var(--red)"></i></div>
+            <span class="req-goal">Objetivo: <b>100.000,00 USDT</b></span>
+          </section>
+          <section class="card req-card">
+            <span class="req-ico">％</span>
+            <span class="req-name">Tasa de finalización</span>
+            <strong class="mono" id="reqRate">0%</strong>
+            <div class="prog"><i id="reqRateBar" style="width:0%;background:var(--red)"></i></div>
+            <span class="req-goal">Objetivo: <b>98,00%</b></span>
+          </section>
+          <section class="card req-card ok">
+            <span class="req-check">✔</span>
+            <span class="req-ico">🏦</span>
+            <span class="req-name">Depósito de comerciante</span>
+            <strong class="mono">1.500,00 USDT</strong>
+            <div class="prog"><i style="width:100%;background:var(--green)"></i></div>
+            <span class="req-goal">Objetivo: <b>650,00 USDT</b> · <span class="green">100,00%</span></span>
+          </section>
+        </div>
+
+        <h2 class="section-sub-title">Parámetros clave</h2>
+        <div class="param-grid">
+          <section class="card">
+            <div class="otabs" style="margin-bottom:.9rem">
+              <button class="active">Mes actual</button>
+              <button>Último mes</button>
+            </div>
+            <div class="kv-row"><span>Tasa de finalización</span><b class="mono" id="pRate">0%</b></div>
+            <div class="kv-row"><span>Tiempo prom. de liberación</span><b class="mono">— min</b></div>
+            <div class="kv-row"><span>Tiempo prom. de pago</span><b class="mono">— min</b></div>
+          </section>
+          <section class="card">
+            <div class="card-head"><h2>Datos de los últimos 30 días</h2></div>
+            <div class="kv-row"><span>Número de operaciones</span><b class="mono" id="pOps">0</b></div>
+            <div class="kv-row"><span>Volumen (COP)</span><b class="mono" id="pVol">$0</b></div>
+            <div class="kv-row"><span>Contrapartes únicas</span><b class="mono" id="pCtp">0</b></div>
+          </section>
+        </div>
+      </div>
+
+      <!-- Configuración API -->
+      <div id="ptab-api" hidden>
+        <div class="param-grid">
+          <section class="card">
+            <div class="card-head"><h2>Estado de las conexiones</h2></div>
+            <div id="connList"></div>
+            <p class="ref-note">Las llaves de API se configuran como variables de entorno en Vercel (nunca desde el navegador, por seguridad). Al guardarlas, haz Redeploy.</p>
+          </section>
+          <section class="card">
+            <div class="card-head"><h2>Controles de operación</h2></div>
+            <div class="ctl-row">
+              <div>
+                <b>Pausar negocios</b>
+                <p class="sub">Desconecta todos los anuncios. Solo se terminan las operaciones pendientes; no entran órdenes nuevas.</p>
+              </div>
+              <label class="switch"><input type="checkbox" id="swBiz"><i></i></label>
+            </div>
+            <div class="ctl-row">
+              <div>
+                <b>Pausar API (solo lectura)</b>
+                <p class="sub">Bloquea todas las acciones de escritura: enviar llave, liberar, marcar pagado, KYC, facturar y chat. Las órdenes se siguen consultando.</p>
+              </div>
+              <label class="switch"><input type="checkbox" id="swApi"><i></i></label>
+            </div>
+            <div class="ctl-row">
+              <div>
+                <b>Refresco automático</b>
+                <p class="sub">Sincroniza las órdenes cada 30 segundos.</p>
+              </div>
+              <label class="switch"><input type="checkbox" id="swAuto" checked><i></i></label>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- Método de pago -->
+      <div id="ptab-pago" hidden>
+        <section class="card" style="max-width:560px">
+          <div class="card-head"><h2>Método de recaudo (ventas)</h2></div>
+          <div class="kv-row"><span>Tipo</span><b>Bre-B (llave)</b></div>
+          <div class="kv-row"><span>Llave</span><b class="mono" id="payKey">—</b></div>
+          <div class="kv-row"><span>Banco</span><b id="payBank">—</b></div>
+          <div class="kv-row"><span>Titular</span><b id="payHolder">—</b></div>
+          <p class="ref-note">Se cambia con las variables BREB_KEY, BREB_BANK y ACCOUNT_HOLDER en Vercel. Es la llave que se envía al chat con "Enviar llave de pago".</p>
+        </section>
+      </div>
+
+      <!-- Placeholders -->
+      <div id="ptab-bloqueados" hidden><section class="card"><p class="empty">Lista de bloqueados — disponible al conectar la API de comerciante de Binance.</p></section></div>
+      <div id="ptab-seguridad" hidden><section class="card"><p class="empty">Configuración de seguridad — el acceso se gestiona con ADMIN_EMAIL / ADMIN_PASSWORD / SESSION_SECRET en Vercel.</p></section></div>
+      <div id="ptab-notif" hidden><section class="card"><p class="empty">Configuración de notificaciones — en desarrollo.</p></section></div>
+    </div><!-- /viewPerfil -->
+
+    <!-- ===== Vista: Cuenta de fondos ===== -->
+    <div id="viewFondos" hidden>
+      <div class="page-head">
+        <h1 class="page-title">Cuenta de fondos</h1>
+        <span class="rate-chip">Valor estimado total <b class="mono" id="fondosTotal">COL$ 0</b></span>
+      </div>
+
+      <div class="param-grid">
+        <section class="card fund-card">
+          <div class="card-head">
+            <h2><span class="fund-coin usdt">₮</span> USDT</h2>
+            <span class="conn-pill demo" id="fundUsdtMode">○ modo demo</span>
+          </div>
+          <strong class="fund-big mono" id="usdtTotal">0,00</strong>
+          <div class="kv-row"><span>Disponible</span><b class="mono" id="usdtFree">0,00</b></div>
+          <div class="kv-row"><span>En órdenes activas</span><b class="mono" id="usdtLocked">0,00</b></div>
+          <div class="kv-row"><span>Depósito de comerciante</span><b class="mono">1.500,00</b></div>
+          <div class="kv-row"><span>Equivalente en COP</span><b class="mono" id="usdtCop">$0</b></div>
+        </section>
+
+        <section class="card fund-card">
+          <div class="card-head">
+            <h2><span class="fund-coin cop">$</span> COP</h2>
+            <span class="conn-pill demo">○ referencia bancaria</span>
+          </div>
+          <strong class="fund-big mono" id="copTotal">$0</strong>
+          <div class="kv-row"><span>Recaudo verificado (órdenes)</span><b class="mono" id="copVerified">$0</b></div>
+          <div class="kv-row"><span>Por verificar en cuenta</span><b class="mono" id="copPending">$0</b></div>
+          <div class="kv-row"><span>Pagado en compras</span><b class="mono" id="copPaid">$0</b></div>
+        </section>
+      </div>
+
+      <p class="ref-note">Los saldos en vivo de USDT llegan de la API de Binance (billetera de fondos) al conectar las llaves; el saldo COP se concilia con la cuenta bancaria del recaudo Bre-B. En modo demo se calculan a partir de las órdenes sincronizadas.</p>
+    </div><!-- /viewFondos -->
 
     </main>
   </div>
